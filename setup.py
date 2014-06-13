@@ -1,4 +1,5 @@
 from setuptools import setup, Extension
+from setuptools.command.build_py import build_py
 from setuptools.command.install import install as InstallCommand
 
 import glob
@@ -12,24 +13,10 @@ lib_vedis = Extension(
     define_macros=[('VEDIS_ENABLE_THREADS', '1')],
     sources=['vedis/src/vedis.c'])
 
-class VedisInstallCommand(InstallCommand):
+
+class GenerateCtypesWrapper(build_py):
     def run(self):
         import ipdb; ipdb.set_trace()
-        cur_dir = os.path.dirname(__file__)
-        src = lambda s: os.path.join(cur_dir, 'vedis', 'src', s)
-
-        # Compile vedis source.
-        #subprocess.check_call(['make', 'build_vedis'])
-        InstallCommand.run(self)
-        subprocess.check_call([
-            'ctypesgen.py',
-            src('vedis.h'),
-            #'-L',
-            #'./',
-            '-l',
-            'vedis',
-            '-o',
-            os.path.join(cur_dir, 'vedis', '_vedis.py')])
 
 
 setup(
@@ -48,6 +35,5 @@ setup(
     zip_safe=False,
     install_requires=['ctypesgen==0.r125'],
     ext_modules=[lib_vedis],
-    cmdclass={
-        'install': VedisInstallCommand},
+    cmdclass={'build_py': GenerateCtypesWrapper},
 )
