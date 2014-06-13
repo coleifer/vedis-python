@@ -1,0 +1,6 @@
+include README.md
+include VEDIS_LICENSE
+
+global-exclude *.pyc
+global-exclude *.o
+global-exclude *.so.0.1

@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 
-from _vedis import *
+from vedis._vedis import *
 
 
 def handle_return_value(rc):
