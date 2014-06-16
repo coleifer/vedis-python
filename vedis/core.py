@@ -158,10 +158,10 @@ class Vedis(object):
         return self.execute('STRLEN %s' % key, result=True)
 
     def copy(self, src, dest):
-        return self.execute('COPY %s %s' % (src, desc), result=True)
+        return self.execute('COPY %s %s' % (src, dest), result=True)
 
     def move(self, src, dest):
-        return self.execute('MOVE %s %s' % (src, desc), result=True)
+        return self.execute('MOVE %s %s' % (src, dest), result=True)
 
     def mget(self, *keys):
         return self.execute('MGET %s' % (' '.join(keys)), iter_result=True)
@@ -217,10 +217,10 @@ class Vedis(object):
         return self.execute('SOUNDEX %s' % s, result=True)
 
     def base64(self, data):
-        return self.execute('BASE64 %s' % data, result=True)
+        return self.execute('BASE64 "%s"' % data, result=True)
 
     def base64_decode(self, data):
-        return self.execute('BASE64_DEC %s' % data, result=True)
+        return self.execute('BASE64_DEC "%s"' % data, result=True)
 
     # Vedis Hash commands.
     def hset(self, hash_key, key, value):
