@@ -128,13 +128,13 @@ class Vedis(object):
         return res == VEDIS_OK
 
     def delete(self, key):
-        handle_return_value(self._vedis, key, len(key))
+        handle_return_value(vedis_kv_delete(self._vedis, key, len(key)))
 
     def random_string(self, nbytes):
         buf = create_string_buffer(nbytes)
         handle_return_value(vedis_util_random_string(
             self._vedis,
-            byref(buf),
+            addressof(buf),
             nbytes))
         return buf.raw[:nbytes]
 
