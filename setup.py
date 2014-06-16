@@ -2,22 +2,26 @@ from setuptools import setup, Extension
 from setuptools.command.build_py import build_py
 from setuptools.command.install import install as InstallCommand
 
-import glob
 import os
 import subprocess
-import sys
-import traceback
 
 lib_vedis = Extension(
     name='vedis.vedis',
     define_macros=[('VEDIS_ENABLE_THREADS', '1')],
     sources=['vedis/src/vedis.c'])
 
-
 class GenerateCtypesWrapper(build_py):
     def run(self):
-        import ipdb; ipdb.set_trace()
-
+        subprocess.check_call([
+            'ctypesgen.py',
+            src('vedis.h'),
+            #'-L',
+            #'./',
+            '-l',
+            'vedis',
+            '-o',
+            os.path.join(cur_dir, 'vedis', '_vedis.py')])
+        return super(GenerateCtypesWrapper, self).run()
 
 setup(
     name='vedis',
