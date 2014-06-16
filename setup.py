@@ -1,4 +1,6 @@
-from setuptools import setup, Extension
+from setuptools import Extension
+from setuptools import find_packages
+from setuptools import setup
 from setuptools.command.build_py import build_py
 from setuptools.command.install import install as InstallCommand
 
@@ -46,7 +48,7 @@ setup(
     description='Python bindings for Vedis, the embedded NoSQL database.',
     author='Charles Leifer',
     author_email='',
-    packages=['vedis'],
+    packages=['vedis'] + find_packages(),
     package_data={
         'vedis': [
             'src/vedis.c',
