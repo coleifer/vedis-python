@@ -374,13 +374,13 @@ class Vedis(object):
         return self.execute('VEDIS', result=True)
 
     def begin(self):
-        self.execute('BEGIN')
+        return self.execute('BEGIN', result=True)
 
     def commit(self):
-        self.execute('COMMIT')
+        return self.execute('COMMIT', result=True)
 
     def rollback(self):
-        self.execute('ROLLBACK')
+        return self.execute('ROLLBACK', result=True)
 
     def commit_on_success(self, fn):
         @wraps(fn)

@@ -356,6 +356,13 @@ class TestTransaction(BaseVedisTestCase):
         # not sure why.
         #self.assertFalse(self.db.exists('k3'))
 
+    def test_base_transaction_methods(self):
+        self.assertTrue(self.db.begin())
+        self.db['k1'] = 'v1'
+        self.assertTrue(self.db.rollback())
+        # Again, I am not sure why this does not work as I expect.
+        #self.assertRaises(KeyError, lambda: self.db['k1'])
+
 
 if __name__ == '__main__':
     unittest.main(argv=sys.argv)
