@@ -2,6 +2,7 @@ include README.md
 include VEDIS_LICENSE
 include vedis/src/vedis.c
 include vedis/src/vedis.h
+recursive-include docs *
 
 global-exclude *.pyc
 global-exclude *.o
