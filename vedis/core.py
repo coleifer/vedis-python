@@ -353,6 +353,9 @@ class Vedis(object):
         return self.execute('SLEN %s', (key,), result=True)
 
     # Vedis list commands.
+    def List(self, name):
+        return List(self, name)
+
     def lindex(self, key, idx):
         return self.execute('LINDEX %s %s', (key, idx), result=True)
 
@@ -445,7 +448,7 @@ class transaction(object):
                 raise
 
 
-class VedisObect(object):
+class VedisObject(object):
     def __init__(self, vedis, key):
         self._vedis = vedis
         self._key = key
@@ -522,8 +525,24 @@ class Set(VedisObject):
     def __iter__(self):
         return iter(self._vedis.smembers(self._key))
 
-    #def sdiff(self, k1, k2):
-    #    return self.execute('SDIFF %s %s', (k1, k2), iter_result=True)
+    def to_set(self):
+        return set(item for item in self)
 
-    #def sinter(self, k1, k2):
-    #    return self.execute('SINTER %s %s', (k1, k2), iter_result=True)
+    def __sub__(self, rhs):
+        return set(self._vedis.sdiff(self._key, rhs._key))
+
+    def __and__(self, rhs):
+        return set(self._vedis.sinter(self._key, rhs._key))
+
+class List(VedisObject):
+    def __getitem__(self, index):
+        return self._vedis.lindex(self._key, index)
+
+    def __len__(self):
+        return self._vedis.llen(self._key)
+
+    def pop(self):
+        return self._vedis.lpop(self._key)
+
+    def append(self, *values):
+        return self._vedis.lpush(self._key, *values)

@@ -393,5 +393,51 @@ class TestHashObject(BaseVedisTestCase):
         })
 
 
+class TestSetObject(BaseVedisTestCase):
+    def test_set_object(self):
+        s = self.db.Set('my_set')
+        s.add('v1')
+        s.add('v2')
+        s.add('v1')
+        self.assertEqual(len(s), 2)
+        self.assertEqual(sorted([i for i in s]), ['v1', 'v2'])
+
+        self.assertEqual(s.peek(), 'v2')
+        self.assertEqual(s.top(), 'v1')
+        self.assertEqual(s.pop(), 'v2')
+        self.assertEqual(len(s), 1)
+
+        self.assertIn('v1', s)
+        self.assertNotIn('v2', s)
+
+        s.add('v3')
+        s.add('v4')
+        s.remove('v3')
+        self.assertEqual(s.to_set(), set(['v1', 'v4']))
+
+        s2 = self.db.Set('other_set')
+        s2.add('v1')
+        s2.add('v2')
+        s2.add('v3')
+
+        self.assertEqual(s - s2, set(['v4']))
+        self.assertEqual(s2 - s, set(['v2', 'v3']))
+        self.assertEqual(s & s2, set(['v1']))
+        self.assertEqual(s2 & s, set(['v1']))
+
+
+class TestListObject(BaseVedisTestCase):
+    def test_list_object(self):
+        l = self.db.List('my_list')
+        l.append('v1', 'v2', 'v3')
+        l.append('v4')
+        self.assertEqual(len(l), 4)
+        self.assertEqual(l.pop(), 'v1')
+        self.assertEqual(l[0], None)  # This is kind of odd, perhaps a bug?
+        self.assertEqual(l[1], 'v2')
+        self.assertEqual(l[3], 'v4')
+        self.assertEqual(l[4], None)
+
+
 if __name__ == '__main__':
     unittest.main(argv=sys.argv)
