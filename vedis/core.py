@@ -38,8 +38,13 @@ class Vedis(object):
         self.close()
         return False
 
-    def execute(self, cmd, nlen=-1, result=False, iter_result=False):
+    def execute(self, cmd, params=None, nlen=-1, result=False,
+                iter_result=False):
         """Execute a Vedis command, optionally returning a result."""
+        if params is not None:
+            params = map(self.escape, params)
+            cmd = cmd % tuple(params)
+
         handle_return_value(vedis_exec(self._vedis, cmd, nlen))
         if result:
             return self.get_result()
@@ -52,7 +57,7 @@ class Vedis(object):
         if vedis_value_is_string(value):
             nbytes = c_int()
             res = vedis_value_to_string(value, pointer(nbytes))
-            return res.raw[:nbytes.value]
+            return res.raw[:nbytes.value].replace('\\"', '"')
         elif vedis_value_is_array(value):
             accum = []
             while True:
@@ -159,21 +164,25 @@ class Vedis(object):
         return str(vedis_lib_version())
 
     def _flatten_list(self, args):
-        return ' '.join('"%s"' % val for val in args)
+        return ' '.join(map(self.escape, args))
 
     def _flatten(self, kwargs):
         return ' '.join(
-            '"%s" "%s"' % (key, value) for key, value in kwargs.items())
+            '%s %s' % (self.escape(key), self.escape(value))
+            for key, value in kwargs.items())
+
+    def escape(self, s):
+        return '"%s"' % str(s).replace('"', '\\"')
 
     # Vedis key/value/string commands.
     def strlen(self, key):
-        return self.execute('STRLEN "%s"' % key, result=True)
+        return self.execute('STRLEN %s', (key,), result=True)
 
     def copy(self, src, dest):
-        return self.execute('COPY "%s" "%s"' % (src, dest), result=True)
+        return self.execute('COPY %s %s', (src, dest), result=True)
 
     def move(self, src, dest):
-        return self.execute('MOVE "%s" "%s"' % (src, dest), result=True)
+        return self.execute('MOVE %s %s', (src, dest), result=True)
 
     def mget(self, *keys):
         return self.execute(
@@ -181,7 +190,7 @@ class Vedis(object):
             iter_result=True)
 
     def setnx(self, key, value):
-        return self.execute('SETNX "%s" "%s"' % (key, value), result=True)
+        return self.execute('SETNX %s %s', (key, value), result=True)
 
     def mset(self, **kwargs):
         return self.execute('MSET %s' % self._flatten(kwargs), result=True)
@@ -190,19 +199,19 @@ class Vedis(object):
         return self.execute('MSETNX %s' % self._flatten(kwargs), result=True)
 
     def get_set(self, key, value):
-        return self.execute('GETSET "%s" "%s"' % (key, value), result=True)
+        return self.execute('GETSET %s %s', (key, value), result=True)
 
     def incr(self, key):
-        return self.execute('INCR "%s"' % key, result=True)
+        return self.execute('INCR %s', (key,), result=True)
 
     def decr(self, key):
-        return self.execute('DECR "%s"' % key, result=True)
+        return self.execute('DECR %s', (key,), result=True)
 
     def incr_by(self, key, amt):
-        return self.execute('INCRBY "%s" %s' % (key, amt), result=True)
+        return self.execute('INCRBY %s %s', (key, amt), result=True)
 
     def decr_by(self, key, amt):
-        return self.execute('DECRBY "%s" %s' % (key, amt), result=True)
+        return self.execute('DECRBY %s %s', (key, amt), result=True)
 
     def csv(self, csv_data, delim=None, enclosure=None, escape=None):
         args = [csv_data]
@@ -212,44 +221,45 @@ class Vedis(object):
             args.append(enclosure or '"')
         if escape:
             args.append(escape)
-        return self.execute('GETCSV "%s"' % (' '.join(args)), iter_result=True)
+        param_str = ' '.join(['%s'] * len(args))
+        return self.execute('GETCSV %s' % param_str, args, iter_result=True)
 
     def strip_tags(self, html):
-        return self.execute('STRIP_TAG "%s"' % html, result=True)
+        return self.execute('STRIP_TAG %s', (html,), result=True)
 
     def str_split(self, s, nchars=1):
-        return self.execute('STR_SPLIT "%s" %s' % (s, nchars), iter_result=True)
+        return self.execute('STR_SPLIT %s %s', (s, nchars), iter_result=True)
 
     def size_format(self, nbytes):
-        return self.execute('SIZE_FMT %s' % nbytes, result=True)
+        return self.execute('SIZE_FMT %s', (nbytes,), result=True)
 
     def soundex(self, s):
-        return self.execute('SOUNDEX "%s"' % s, result=True)
+        return self.execute('SOUNDEX %s', (s,), result=True)
 
     def base64(self, data):
-        return self.execute('BASE64 "%s"' % data, result=True)
+        return self.execute('BASE64 %s', (data,), result=True)
 
     def base64_decode(self, data):
-        return self.execute('BASE64_DEC "%s"' % data, result=True)
+        return self.execute('BASE64_DEC %s', (data,), result=True)
 
     # Vedis Hash commands.
     def hset(self, hash_key, key, value):
-        self.execute('HSET "%s" "%s" "%s"' % (hash_key, key, value))
+        self.execute('HSET %s %s %s', (hash_key, key, value))
 
     def hget(self, hash_key, key):
-        return self.execute('HGET "%s" "%s"' % (hash_key, key), result=True)
+        return self.execute('HGET %s %s', (hash_key, key), result=True)
 
     def hdel(self, hash_key, key):
-        self.execute('HDEL "%s" "%s"' % (hash_key, key))
+        self.execute('HDEL %s %s', (hash_key, key))
 
     def hkeys(self, hash_key):
-        return self.execute('HKEYS "%s"' % hash_key, iter_result=True)
+        return self.execute('HKEYS %s', (hash_key,), iter_result=True)
 
     def hvals(self, hash_key):
-        return self.execute('HVALS "%s"' % hash_key, iter_result=True)
+        return self.execute('HVALS %s', (hash_key,), iter_result=True)
 
     def hgetall(self, hash_key):
-        result = self.execute('HGETALL "%s"' % hash_key, result=True)
+        result = self.execute('HGETALL %s', (hash_key,), result=True)
         if result is not None:
             return dict(zip(result[::2], result[1::2]))
 
@@ -257,76 +267,80 @@ class Vedis(object):
     hitems = hgetall
 
     def hlen(self, hash_key):
-        return self.execute('HLEN "%s"' % hash_key, result=True)
+        return self.execute('HLEN %s', (hash_key,), result=True)
 
     def hexists(self, hash_key, key):
-        return self.execute('HEXISTS "%s" "%s"' % (hash_key, key), result=True)
+        return self.execute('HEXISTS %s %s', (hash_key, key), result=True)
 
     def hmset(self, hash_key, **kwargs):
-        self.execute('HMSET "%s" %s' % (hash_key, self._flatten(kwargs)))
+        self.execute('HMSET %%s %s' % self._flatten(kwargs), (hash_key,))
 
     def hmget(self, hash_key, *keys):
         return self.execute(
-            'HMGET "%s" %s' % (hash_key, self._flatten_list(keys)),
+            'HMGET %%s %s' % self._flatten_list(keys),
+            (hash_key,),
             iter_result=True)
 
     def hsetnx(self, hash_key, key, value):
         return self.execute(
-            'HSETNX "%s" "%s" "%s"' % (hash_key, key, value),
+            'HSETNX %s %s %s',
+            (hash_key, key, value),
             result=True)
 
     # Vedis set commands.
     def sadd(self, key, value):
-        return self.execute('SADD "%s" "%s"' % (key, value), result=True)
+        return self.execute('SADD %s %s', (key, value), result=True)
 
     def scard(self, key):
-        return self.execute('SCARD "%s"' % key, result=True)
+        return self.execute('SCARD %s', (key,), result=True)
 
     def sismember(self, key, value):
-        return self.execute('SISMEMBER "%s" "%s"' % (key, value), result=True)
+        return self.execute('SISMEMBER %s %s', (key, value), result=True)
 
     def spop(self, key):
-        return self.execute('SPOP "%s"' % key, result=True)
+        return self.execute('SPOP %s', (key,), result=True)
 
     def speek(self, key):
-        return self.execute('SPEEK "%s"' % key, result=True)
+        return self.execute('SPEEK %s', (key,), result=True)
 
     def stop(self, key):
-        return self.execute('STOP "%s"' % key, result=True)
+        return self.execute('STOP %s', (key,), result=True)
 
     def srem(self, key, value):
-        return self.execute('SREM "%s" "%s"' % (key, value), result=True)
+        return self.execute('SREM %s %s', (key, value), result=True)
 
     def smembers(self, key):
-        return self.execute('SMEMBERS "%s"' % key, iter_result=True)
+        return self.execute('SMEMBERS %s', (key,), iter_result=True)
 
     def sdiff(self, k1, k2):
-        return self.execute('SDIFF "%s" "%s"' % (k1, k2), iter_result=True)
+        return self.execute('SDIFF %s %s', (k1, k2), iter_result=True)
 
     def sinter(self, k1, k2):
-        return self.execute('SINTER "%s" "%s"' % (k1, k2), iter_result=True)
+        return self.execute('SINTER %s %s', (k1, k2), iter_result=True)
 
     def slen(self, key):
-        return self.execute('SLEN "%s"' % key, result=True)
+        return self.execute('SLEN %s', (key,), result=True)
 
     # Vedis list commands.
     def lindex(self, key, idx):
-        return self.execute('LINDEX "%s" "%s"' % (key, idx), result=True)
+        return self.execute('LINDEX %s %s', (key, idx), result=True)
 
     def llen(self, key):
-        return self.execute('LLEN "%s"' % key, result=True)
+        return self.execute('LLEN %s', (key,), result=True)
 
     def lpop(self, key):
-        return self.execute('LPOP "%s"' % key, result=True)
+        return self.execute('LPOP %s', (key,), result=True)
 
     def lpushx(self, key, *vals):
         return self.execute(
-            'LPUSHX "%s" %s' % (key, self._flatten_list(vals)),
+            'LPUSHX %%s %s' % self._flatten_list(vals),
+            (key,),
             result=True)
 
     def lpush(self, key, *vals):
         return self.execute(
-            'LPUSH "%s" %s' % (key, self._flatten_list(vals)),
+            'LPUSH %%s %s' % self._flatten_list(vals),
+            (key,),
             result=True)
 
     # Vedis misc commands.

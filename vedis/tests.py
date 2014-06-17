@@ -246,6 +246,15 @@ class TestHashCommands(BaseVedisTestCase):
         self.assertEqual(self.db.hmget('missing', 'x'), None)
         self.assertFalse(self.db.hexists('missing', 'x'))
 
+    def test_quoting(self):
+        in_data = {
+            'k "1"': 'v "1"',
+            'k "2"': 'v "2"',
+        }
+        self.db.hmset('hash', **in_data)
+        out_data = self.db.hgetall('hash')
+        self.assertEqual(in_data, out_data)
+
 
 class TestSetCommands(BaseVedisTestCase):
     def test_set_methods(self):
