@@ -100,6 +100,7 @@ class Vedis(object):
             else:
                 raise StopIteration
 
+    # Key/Value APIs.
     def store(self, key, value):
         """Store a value in the given key."""
         key, value = str(key), str(value)
@@ -249,6 +250,9 @@ class Vedis(object):
         return self.execute('BASE64_DEC %s', (data,), result=True)
 
     # Vedis Hash commands.
+    def Hash(self, key):
+        return Hash(self, key)
+
     def hset(self, hash_key, key, value):
         self.execute('HSET %s %s %s', (hash_key, key, value))
 
@@ -269,8 +273,10 @@ class Vedis(object):
         if result is not None:
             return dict(zip(result[::2], result[1::2]))
 
-    # Alias for more dict-like behavior.
-    hitems = hgetall
+    def hitems(self, hash_key):
+        result = self.execute('HGETALL %s', (hash_key,), result=True)
+        if result is not None:
+            return zip(result[::2], result[1::2])
 
     def hlen(self, hash_key):
         return self.execute('HLEN %s', (hash_key,), result=True)
@@ -407,3 +413,54 @@ class transaction(object):
             except:
                 self.vedis.rollback()
                 raise
+
+
+class Hash(object):
+    def __init__(self, vedis, key):
+        self._vedis = vedis
+        self._hash_key = key
+
+    def get(self, key):
+        return self._vedis.hget(self._hash_key, key)
+
+    def set(self, key, value):
+        return self._vedis.hset(self._hash_key, key, value)
+
+    def delete(self, key):
+        return self._vedis.hdel(self._hash_key, key)
+
+    def keys(self):
+        return self._vedis.hkeys(self._hash_key)
+
+    def values(self):
+        return self._vedis.hvals(self._hash_key)
+
+    def items(self):
+        return self._vedis.hitems(self._hash_key)
+
+    def update(self, **kwargs):
+        return self._vedis.hmset(self._hash_key, **kwargs)
+
+    def to_dict(self):
+        return self._vedis.hgetall(self._hash_key)
+
+    def __len__(self):
+        return self._vedis.hlen(self._hash_key)
+
+    def __contains__(self, key):
+        return self._vedis.hexists(self._hash_key, key)
+
+    def __setitem__(self, key, value):
+        return self.set(key, value)
+
+    def __getitem__(self, key):
+        return self.get(key)
+
+    def __delitem__(self, key):
+        return self.delete(key)
+
+    def __iter__(self):
+        return iter(self.keys())
+
+    def __repr__(self):
+        return '<Hash: %s>' % self._vedis.hgetall(self._hash_key)

@@ -231,6 +231,11 @@ class TestHashCommands(BaseVedisTestCase):
             'k1': 'v1',
             'k2': 'v2',
             'k3': 'v3'})
+        self.assertEqual(sorted(self.db.hitems('hash')), [
+            ('k1', 'v1'),
+            ('k2', 'v2'),
+            ('k3', 'v3'),
+        ])
 
         self.assertEqual(
             list(self.db.hmget('hash', 'k1', 'missing', 'k2')),
@@ -362,6 +367,30 @@ class TestTransaction(BaseVedisTestCase):
         self.assertTrue(self.db.rollback())
         # Again, I am not sure why this does not work as I expect.
         #self.assertRaises(KeyError, lambda: self.db['k1'])
+
+
+class TestHashObject(BaseVedisTestCase):
+    def test_hash_object(self):
+        h = self.db.Hash('my_hash')
+        h['k1'] = 'v1'
+        h['k2'] = 'v2'
+        self.assertEqual(len(h), 2)
+        self.assertEqual(sorted(h.keys()), ['k1', 'k2'])
+        self.assertEqual(sorted(h.values()), ['v1', 'v2'])
+        self.assertEqual(sorted(h.items()), [
+            ('k1', 'v1'),
+            ('k2', 'v2'),
+        ])
+        self.assertEqual(sorted(k for k in h), ['k1', 'k2'])
+        del h['k1']
+        self.assertFalse('k1' in h)
+
+        h.update(k3='v3', k4='v4')
+        self.assertEqual(h.to_dict(), {
+            'k2': 'v2',
+            'k3': 'v3',
+            'k4': 'v4',
+        })
 
 
 if __name__ == '__main__':
