@@ -93,6 +93,11 @@ class TestKeyValueAPI(BaseVedisTestCase):
             list(self.db.mget('k1', 'k2', 'foo')),
             ['v-x', 'v2', 'bar'])
 
+        self.db.mset(**{'k s': 'vs', 'k s2': 'vs2'})
+        self.assertEqual(
+            list(self.db.mget('k s', 'k s2')),
+            ['vs', 'vs2'])
+
     def test_msetnx(self):
         self.db['k1'] = 'v1'
         self.db.msetnx(k1='v-x', k2='v2', foo='bar')
@@ -165,7 +170,7 @@ class TestStringCommands(BaseVedisTestCase):
     def test_strip_tags(self):
         data = '<p>This <span>is</span> a test.</p>'
         res = self.db.strip_tags(data)
-        self.assertEqual(res, 'This')
+        self.assertEqual(res, 'This is a test.')
 
     def test_str_split(self):
         res = self.db.str_split('abcdefghijklmnopqrstuvwxyz', 5)
