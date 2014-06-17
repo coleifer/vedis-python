@@ -137,6 +137,11 @@ class TestKeyValueAPI(BaseVedisTestCase):
         res = self.db.decr_by('c', 90)
         self.assertEqual(res, 20)
 
+    def test_quoted_values(self):
+        self.db['k"1"'] = 'value "with quotes"'
+        res = self.db['k"1"']
+        self.assertEqual(res, 'value "with quotes"')
+
 
 class TestStringCommands(BaseVedisTestCase):
     def test_strlen(self):
