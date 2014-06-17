@@ -23,6 +23,17 @@ _command_callback = CFUNCTYPE(
     c_int,
     POINTER(POINTER(vedis_value)))
 
+def wrap_command(fn):
+    def inner(vedis_context, nargs, values):
+        try:
+            ret = fn(vedis_context, nargs, values)
+        except:
+            return VEDIS_UNKNOWN
+        else:
+            # Push `ret`?
+            return VEDIS_OK
+    return _command_callback(inner), inner
+
 class Vedis(object):
     """
     Vedis database python bindings.
@@ -305,6 +316,9 @@ class Vedis(object):
             result=True)
 
     # Vedis set commands.
+    def Set(self, name):
+        return Set(self, name)
+
     def sadd(self, key, value):
         return self.execute('SADD %s %s', (key, value), result=True)
 
@@ -402,11 +416,13 @@ class Vedis(object):
 
     def register(self, command_name, user_data=None):
         def _decorator(fn):
+            c_callback, inner = wrap_command(fn)
             vedis_register_command(
                 self._vedis,
                 command_name,
-                _command_callback(fn),
+                c_callback,
                 user_data or '')
+            return inner
         return _decorator
 
 
@@ -429,40 +445,42 @@ class transaction(object):
                 raise
 
 
-class Hash(object):
+class VedisObect(object):
     def __init__(self, vedis, key):
         self._vedis = vedis
-        self._hash_key = key
+        self._key = key
 
+
+class Hash(VedisObject):
     def get(self, key):
-        return self._vedis.hget(self._hash_key, key)
+        return self._vedis.hget(self._key, key)
 
     def set(self, key, value):
-        return self._vedis.hset(self._hash_key, key, value)
+        return self._vedis.hset(self._key, key, value)
 
     def delete(self, key):
-        return self._vedis.hdel(self._hash_key, key)
+        return self._vedis.hdel(self._key, key)
 
     def keys(self):
-        return self._vedis.hkeys(self._hash_key)
+        return self._vedis.hkeys(self._key)
 
     def values(self):
-        return self._vedis.hvals(self._hash_key)
+        return self._vedis.hvals(self._key)
 
     def items(self):
-        return self._vedis.hitems(self._hash_key)
+        return self._vedis.hitems(self._key)
 
     def update(self, **kwargs):
-        return self._vedis.hmset(self._hash_key, **kwargs)
+        return self._vedis.hmset(self._key, **kwargs)
 
     def to_dict(self):
-        return self._vedis.hgetall(self._hash_key)
+        return self._vedis.hgetall(self._key)
 
     def __len__(self):
-        return self._vedis.hlen(self._hash_key)
+        return self._vedis.hlen(self._key)
 
     def __contains__(self, key):
-        return self._vedis.hexists(self._hash_key, key)
+        return self._vedis.hexists(self._key, key)
 
     def __setitem__(self, key, value):
         return self.set(key, value)
@@ -477,4 +495,35 @@ class Hash(object):
         return iter(self.keys())
 
     def __repr__(self):
-        return '<Hash: %s>' % self._vedis.hgetall(self._hash_key)
+        return '<Hash: %s>' % self.to_dict()
+
+class Set(VedisObject):
+    def add(self, value):
+        self._vedis.sadd(self._key, value)
+
+    def __len__(self):
+        return self._vedis.scard(self._key)
+
+    def __contains__(self, value):
+        return self._vedis.sismember(self._key, value)
+
+    def pop(self):
+        return self._vedis.spop(self._key)
+
+    def peek(self):
+        return self._vedis.speek(self._key)
+
+    def top(self):
+        return self._vedis.stop(self._key)
+
+    def remove(self, value):
+        return self._vedis.srem(self._key, value)
+
+    def __iter__(self):
+        return iter(self._vedis.smembers(self._key))
+
+    #def sdiff(self, k1, k2):
+    #    return self.execute('SDIFF %s %s', (k1, k2), iter_result=True)
+
+    #def sinter(self, k1, k2):
+    #    return self.execute('SINTER %s %s', (k1, k2), iter_result=True)
