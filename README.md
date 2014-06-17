@@ -3,6 +3,8 @@ vedis-python
 
 Python bindings for the Vedis embedded NoSQL database. Vedis is a fun, fast, embedded database modeled after Redis.
 
+[View the vedis-python documentation](http://vedis-python.readthedocs.org/).
+
 Vedis does lots of little things.
 
 ![](http://media.charlesleifer.com/blog/photos/more-hueys.png)
