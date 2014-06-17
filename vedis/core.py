@@ -14,7 +14,7 @@ def handle_return_value(rc):
             VEDIS_ABORT: 'Another thread released the database handle',
             VEDIS_BUSY: 'Database is locked by another thread/process',
             VEDIS_READ_ONLY: 'Database is in read-only mode',
-        }.get(rc, 'Unknown exception'))
+        }.get(rc, 'Unknown exception: %s' % rc))
 
 
 class Vedis(object):
@@ -81,7 +81,12 @@ class Vedis(object):
         value = POINTER(vedis_value)()
         vedis_exec_result(self._vedis, byref(value))
         if not vedis_value_is_array(value):
+            if vedis_value_is_null(value):
+                return None
             raise TypeError('Value is not an array.')
+        return self.iter_vedis_array(value)
+
+    def iter_vedis_array(self, value):
         while True:
             item = vedis_array_next_elem(value)
             if item:
@@ -240,7 +245,11 @@ class Vedis(object):
 
     def hgetall(self, hash_key):
         result = self.execute('HGETALL %s' % hash_key, result=True)
-        return dict(zip(result[::2], result[1::2]))
+        if result is not None:
+            return dict(zip(result[::2], result[1::2]))
+
+    # Alias for more dict-like behavior.
+    hitems = hgetall
 
     def hlen(self, hash_key):
         return self.execute('HLEN %s' % hash_key, result=True)
