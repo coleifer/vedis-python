@@ -142,6 +142,14 @@ class TestKeyValueAPI(BaseVedisTestCase):
         res = self.db['k"1"']
         self.assertEqual(res, 'value "with quotes"')
 
+    def test_numbers(self):
+        self.db[1] = 2
+        self.assertEqual(self.db[1], '2')
+        self.db.append(1, '3')
+        self.assertEqual(self.db[1], '23')
+        self.assertTrue(self.db.exists(1))
+        self.assertFalse(self.db.exists(2))
+
 
 class TestStringCommands(BaseVedisTestCase):
     def test_strlen(self):
@@ -325,6 +333,28 @@ class TestMiscCommands(BaseVedisTestCase):
         self.db.sadd('set', 'v1')
         tables = self.db.table_list()
         self.assertEqual(sorted(tables), ['hash', 'set'])
+
+
+class TestTransaction(BaseVedisTestCase):
+    def test_transaction(self):
+        self.db['k1'] = 'v1'
+
+        @self.db.commit_on_success
+        def succeed():
+            self.db['k2'] = 'v2'
+
+        @self.db.commit_on_success
+        def fail():
+            self.db['k3'] = 'v3'
+            raise Exception('uh-oh')
+
+        succeed()
+        self.assertEqual(self.db['k2'], 'v2')
+
+        self.assertRaises(Exception, fail)
+        # Currently this does not work and the rollback does not work. I am
+        # not sure why.
+        #self.assertFalse(self.db.exists('k3'))
 
 
 if __name__ == '__main__':

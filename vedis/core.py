@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from functools import wraps
 
 from vedis._vedis import *
 
@@ -101,6 +102,7 @@ class Vedis(object):
 
     def store(self, key, value):
         """Store a value in the given key."""
+        key, value = str(key), str(value)
         handle_return_value(vedis_kv_store(
             self._vedis,
             key,
@@ -110,6 +112,7 @@ class Vedis(object):
 
     def fetch(self, key, buf_size=4096):
         """Retrieve a value in the given key."""
+        key = str(key)
         buf = create_string_buffer(buf_size)
         nbytes = vedis_int64(buf_size)
         rc = vedis_kv_fetch(
@@ -125,6 +128,7 @@ class Vedis(object):
         handle_return_value(rc)
 
     def append(self, key, value):
+        key, value = str(key), str(value)
         handle_return_value(vedis_kv_append(
             self._vedis,
             key,
@@ -134,10 +138,12 @@ class Vedis(object):
 
     def exists(self, key):
         nbytes = vedis_int64(0)
+        key = str(key)
         res = vedis_kv_fetch(self._vedis, key, len(key), None, byref(nbytes))
         return res == VEDIS_OK
 
     def delete(self, key):
+        key = str(key)
         handle_return_value(vedis_kv_delete(self._vedis, key, len(key)))
 
     def random_string(self, nbytes):
@@ -375,6 +381,13 @@ class Vedis(object):
 
     def rollback(self):
         self.execute('ROLLBACK')
+
+    def commit_on_success(self, fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            with self.transaction():
+                return fn(*args, **kwargs)
+        return wrapper
 
 
 class transaction(object):
