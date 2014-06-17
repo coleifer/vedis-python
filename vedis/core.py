@@ -17,6 +17,11 @@ def handle_return_value(rc):
             VEDIS_READ_ONLY: 'Database is in read-only mode',
         }.get(rc, 'Unknown exception: %s' % rc))
 
+_command_callback = CFUNCTYPE(
+    UNCHECKED(c_int),
+    POINTER(vedis_context),
+    c_int,
+    POINTER(POINTER(vedis_value)))
 
 class Vedis(object):
     """
@@ -394,6 +399,15 @@ class Vedis(object):
             with self.transaction():
                 return fn(*args, **kwargs)
         return wrapper
+
+    def register(self, command_name, user_data=None):
+        def _decorator(fn):
+            vedis_register_command(
+                self._vedis,
+                command_name,
+                _command_callback(fn),
+                user_data or '')
+        return _decorator
 
 
 class transaction(object):
