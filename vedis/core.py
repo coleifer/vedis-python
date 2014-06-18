@@ -92,13 +92,13 @@ def wrap_command(fn):
             _push_result(vedis_context, ret)
             return VEDIS_OK
 
-    _command_callback = CFUNCTYPE(
+    c_callback = CFUNCTYPE(
         UNCHECKED(c_int),
         POINTER(vedis_context),
         c_int,
-        POINTER(POINTER(vedis_value)))
+        POINTER(POINTER(vedis_value)))(inner)
 
-    return _command_callback(inner), inner
+    return c_callback, inner
 
 class Vedis(object):
     """
@@ -106,6 +106,7 @@ class Vedis(object):
     """
     def __init__(self, database=':mem:'):
         self._vedis = POINTER(vedis)()
+        self._command_registry = {}
         rc = vedis_open(byref(self._vedis), database)
         if rc != VEDIS_OK:
             raise Exception('Unable to open Vedis database')
@@ -471,6 +472,8 @@ class Vedis(object):
     def register(self, command_name, user_data=None):
         def _decorator(fn):
             c_callback, inner = wrap_command(fn)
+            # Keep reference to the ctypes callback.
+            self._command_registry[command_name] = c_callback
             vedis_register_command(
                 self._vedis,
                 command_name,
@@ -481,6 +484,8 @@ class Vedis(object):
         return _decorator
 
     def delete_command(self, command_name):
+        if command_name in self._command_registry:
+            del self._command_registry[command_name]
         handle_return_value(vedis_delete_command(self._vedis, command_name))
 
     def __getattr__(self, attr):
