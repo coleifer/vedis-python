@@ -30,8 +30,10 @@ You can treat Vedis as a key/value store:
 
 But Vedis also supports many interesting Redis-type data structures and commands.
 
-    db.hmset('my_hash', foo='bar', baz='nuggets')
-    my_hash = d.hgetall('my_hash')
-    # my_hash == {'foo': 'bar', 'baz': 'nuggets}
+    h = db.Hash('my hash')
+    h['sub-key'] = 'val'
+    h.update(baz='nuggets', huey='kitten')
+    my_hash = h.to_dict()
+    # my_hash == {'sub-key': 'val', 'baz': 'nuggets', 'huey': 'kitten'}0
 
-I will have documentation for the available commands and return types available soon!
+Check out the [quick start](http://vedis-python.readthedocs.org/en/latest/quickstart.html) for more examples.
