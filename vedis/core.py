@@ -194,6 +194,9 @@ class Vedis(object):
     __delitem__ = delete
     __contains__ = exists
 
+    def update(self, **kwargs):
+        return self.mset(**kwargs)
+
     def transaction(self):
         return transaction(self)
 
@@ -477,7 +480,8 @@ class Vedis(object):
                     result=True)
             return _call
 
-        raise AttributeError('Unrecognized attribute: "%s"' % attr)
+        raise AttributeError("%s object has no attribute '%s'",
+                             type(self).__name__, attr)
 
 
 class transaction(object):
