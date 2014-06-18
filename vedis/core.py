@@ -44,20 +44,40 @@ def _convert_value(value):
 
 def _push_result(context, result):
     if isinstance(result, basestring):
-        return vedis_result_string(context, result, -1)
+        vedis_result_string(context, result, -1)
+    elif isinstance(result, (list, tuple)):
+        vedis_result_value(context, _create_array(context, result))
     elif isinstance(result, (int, long)):
-        return vedis_result_int(context, result)
+        vedis_result_int(context, result)
     elif isinstance(result, bool):
-        return vedis_result_bool(context, result)
+        vedis_result_bool(context, result)
     elif isinstance(result, float):
-        return vedis_result_double(context, result)
-    return vedis_result_null(context)
+        vedis_result_double(context, result)
+    else:
+        vedis_result_null(context)
 
-_command_callback = CFUNCTYPE(
-    UNCHECKED(c_int),
-    POINTER(vedis_context),
-    c_int,
-    POINTER(POINTER(vedis_value)))
+def _create_array(context, items):
+    arr = vedis_context_new_array(context)
+    for item in items:
+        if isinstance(item, (list, tuple)):
+            vedis_val = _create_array(context, item)
+        else:
+            vedis_val = vedis_context_new_scalar(context)
+            _set_value(vedis_val, item)
+        vedis_array_insert(arr, vedis_val)
+    return arr
+
+def _set_value(value, python_value):
+    if isinstance(python_value, basestring):
+        vedis_value_string(value, python_value, -1)
+    elif isinstance(python_value, (int, long)):
+        vedis_value_int(value, python_value)
+    elif isinstance(python_value, bool):
+        vedis_value_bool(value, python_value)
+    elif isinstance(python_value, float):
+        vedis_value_double(value, python_value)
+    else:
+        vedis_value_null(value)
 
 _vedis_lib = _c_libraries['vedis']
 
@@ -71,6 +91,13 @@ def wrap_command(fn):
         else:
             _push_result(vedis_context, ret)
             return VEDIS_OK
+
+    _command_callback = CFUNCTYPE(
+        UNCHECKED(c_int),
+        POINTER(vedis_context),
+        c_int,
+        POINTER(POINTER(vedis_value)))
+
     return _command_callback(inner), inner
 
 class Vedis(object):
@@ -450,6 +477,7 @@ class Vedis(object):
                 c_callback,
                 user_data or '')
             return inner
+
         return _decorator
 
     def delete_command(self, command_name):

@@ -15,6 +15,27 @@ Here is a small example:
     def concat(context, glue, *params):
         return glue.join(params)
 
-    print db.execute('CONCAT | foo bar baz', result=True)  # foo|bar|baz
+    @db.register('TITLE')
+    def title(context, *params):
+        return [param.title() for param in params]
 
-At the moment only scalar return types (or ``None``) are supported, though I intend on adding support for returning lists as well.
+Usage:
+
+.. code-block:: pycon
+
+    >>> print db.execute('CONCAT | foo bar baz', result=True)
+    foo|bar|baz
+
+    >>> print db.execute('TITLE "testing" "this is a test" "another"', result=True)
+    ['Testing', 'This Is A Test', 'Another']
+
+
+Valid return types for user-defined commands
+--------------------------------------------
+
+* ``list`` or ``tuple`` (containing arbitrary levels of nesting).
+* ``str``
+* ``int`` and ``long``
+* ``float``
+* ``bool``
+* ``None``
