@@ -17,6 +17,41 @@ def handle_return_value(rc):
             VEDIS_READ_ONLY: 'Database is in read-only mode',
         }.get(rc, 'Unknown exception: %s' % rc))
 
+def _convert_value(value):
+    # Vedis supports dynamic typing, so we need to check the type of the
+    # vedis value and the convert it.
+    if vedis_value_is_string(value):
+        nbytes = c_int()
+        res = vedis_value_to_string(value, pointer(nbytes))
+        return res.raw[:nbytes.value].replace('\\"', '"')
+    elif vedis_value_is_array(value):
+        accum = []
+        while True:
+            item = vedis_array_next_elem(value)
+            if not item:
+                break
+            accum.append(_convert_value(item))
+        return accum
+    elif vedis_value_is_bool(value):
+        return bool(vedis_value_to_bool(value))
+    elif vedis_value_is_null(value):
+        return None
+    elif vedis_value_is_int(value):
+        return vedis_value_to_int(value)
+    else:
+        raise TypeError('Unknown type encountered')
+
+def _push_result(context, result):
+    if isinstance(result, basestring):
+        vedis_result_string(context, result, len(result))
+    elif isinstance(result, (int, long)):
+        vedis_result_int(context, result)
+    elif isinstance(result, bool):
+        vedis_result_bool(context, result)
+    elif isinstance(result, float):
+        vedis_result_double(context, result)
+    vedis_result_null(context)
+
 _command_callback = CFUNCTYPE(
     UNCHECKED(c_int),
     POINTER(vedis_context),
@@ -25,12 +60,13 @@ _command_callback = CFUNCTYPE(
 
 def wrap_command(fn):
     def inner(vedis_context, nargs, values):
+        converted_args = [_convert_value(values[i]) for i in range(nargs)]
         try:
-            ret = fn(vedis_context, nargs, values)
+            ret = fn(vedis_context, *converted_args)
         except:
             return VEDIS_UNKNOWN
         else:
-            # Push `ret`?
+            _push_result(vedis_context, ret)
             return VEDIS_OK
     return _command_callback(inner), inner
 
@@ -68,35 +104,11 @@ class Vedis(object):
         elif iter_result:
             return self.iter_result()
 
-    def _convert_value(self, value):
-        # Vedis supports dynamic typing, so we need to check the type of the
-        # vedis value and the convert it.
-        if vedis_value_is_string(value):
-            nbytes = c_int()
-            res = vedis_value_to_string(value, pointer(nbytes))
-            return res.raw[:nbytes.value].replace('\\"', '"')
-        elif vedis_value_is_array(value):
-            accum = []
-            while True:
-                item = vedis_array_next_elem(value)
-                if not item:
-                    break
-                accum.append(self._convert_value(item))
-            return accum
-        elif vedis_value_is_bool(value):
-            return bool(vedis_value_to_bool(value))
-        elif vedis_value_is_null(value):
-            return None
-        elif vedis_value_is_int(value):
-            return vedis_value_to_int(value)
-        else:
-            raise TypeError('Unknown type encountered')
-
     def get_result(self):
         """Retrieve the result of the last executed Vedis command."""
         value = POINTER(vedis_value)()
         vedis_exec_result(self._vedis, byref(value))
-        return self._convert_value(value)
+        return _convert_value(value)
 
     def iter_result(self):
         """Iterate over a result set."""
@@ -112,7 +124,7 @@ class Vedis(object):
         while True:
             item = vedis_array_next_elem(value)
             if item:
-                yield self._convert_value(item)
+                yield _convert_value(item)
             else:
                 raise StopIteration
 
@@ -319,8 +331,11 @@ class Vedis(object):
     def Set(self, name):
         return Set(self, name)
 
-    def sadd(self, key, value):
-        return self.execute('SADD %s %s', (key, value), result=True)
+    def sadd(self, key, *values):
+        return self.execute(
+            'SADD %%s %s' % self._flatten_list(values),
+            (key,),
+            result=True)
 
     def scard(self, key):
         return self.execute('SCARD %s', (key,), result=True)
@@ -337,8 +352,11 @@ class Vedis(object):
     def stop(self, key):
         return self.execute('STOP %s', (key,), result=True)
 
-    def srem(self, key, value):
-        return self.execute('SREM %s %s', (key, value), result=True)
+    def srem(self, key, *values):
+        return self.execute(
+            'SREM %%s %s' % self._flatten_list(values),
+            (key,),
+            result=True)
 
     def smembers(self, key):
         return self.execute('SMEMBERS %s', (key,), iter_result=True)
@@ -501,8 +519,8 @@ class Hash(VedisObject):
         return '<Hash: %s>' % self.to_dict()
 
 class Set(VedisObject):
-    def add(self, value):
-        self._vedis.sadd(self._key, value)
+    def add(self, *values):
+        return self._vedis.sadd(self._key, *values)
 
     def __len__(self):
         return self._vedis.scard(self._key)
@@ -519,8 +537,8 @@ class Set(VedisObject):
     def top(self):
         return self._vedis.stop(self._key)
 
-    def remove(self, value):
-        return self._vedis.srem(self._key, value)
+    def remove(self, *values):
+        return self._vedis.srem(self._key, *values)
 
     def __iter__(self):
         return iter(self._vedis.smembers(self._key))

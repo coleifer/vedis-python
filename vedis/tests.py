@@ -291,14 +291,21 @@ class TestSetCommands(BaseVedisTestCase):
 
         self.assertEqual(set(self.db.smembers('set')), set(['v1', 'v3']))
 
-    def test_intersection_difference(self):
-        self.db.sadd('s1', 'v1')
-        self.db.sadd('s1', 'v2')
-        self.db.sadd('s1', 'v3')
+    def test_multi_add_remove(self):
+        res = self.db.sadd('my_set', 'v1', 'v2', 'v3', 'v4', 'v1', 'v2')
+        self.assertEqual(res, 6)
+        self.assertEqual(self.db.scard('my_set'), 4)
+        self.assertEqual(sorted(list(self.db.smembers('my_set'))),
+                         ['v1', 'v2', 'v3', 'v4'])
 
-        self.db.sadd('s2', 'v2')
-        self.db.sadd('s2', 'v3')
-        self.db.sadd('s2', 'v4')
+        res = self.db.srem('my_set', 'v1', 'v3', 'v1', 'v1')
+        self.assertEqual(res, 2)
+        self.assertEqual(sorted(list(self.db.smembers('my_set'))),
+                         ['v2', 'v4'])
+
+    def test_intersection_difference(self):
+        self.db.sadd('s1', 'v1', 'v2', 'v3')
+        self.db.sadd('s2', 'v2', 'v3', 'v4')
 
         self.assertEqual(
             set(self.db.sinter('s1', 's2')),
@@ -396,9 +403,8 @@ class TestHashObject(BaseVedisTestCase):
 class TestSetObject(BaseVedisTestCase):
     def test_set_object(self):
         s = self.db.Set('my_set')
-        s.add('v1')
+        s.add('v1', 'v2', 'v1')
         s.add('v2')
-        s.add('v1')
         self.assertEqual(len(s), 2)
         self.assertEqual(sorted([i for i in s]), ['v1', 'v2'])
 
