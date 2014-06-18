@@ -452,6 +452,33 @@ class Vedis(object):
     def delete_command(self, command_name):
         handle_return_value(vedis_delete_command(self._vedis, command_name))
 
+    def __getattr__(self, attr):
+        if attr.upper() == attr:
+            def _call(*args, **kwargs):
+                direct_params, params = [], []
+                command_string = [attr]
+                for arg in args:
+                    if isinstance(arg, (list, tuple)):
+                        direct_params.append(self._flatten_list(arg))
+                        command_string.append('%s')
+                    elif isinstance(arg, dict):
+                        direct_params.append(self._flatten(arg))
+                        command_string.append('%s')
+                    else:
+                        params.append(arg)
+                        command_string.append('%%s')
+                if kwargs:
+                    direct_params.append(self._flatten(kwargs))
+                    command_string.append('%s')
+
+                return self.execute(
+                    ' '.join(command_string) % direct_params,
+                    params,
+                    result=True)
+            return _call
+
+        raise AttributeError('Unrecognized attribute: "%s"' % attr)
+
 
 class transaction(object):
     def __init__(self, vedis):
