@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from functools import wraps
 
 from vedis._vedis import *
+from vedis._vedis import _libs as _c_libraries
 
 
 def handle_return_value(rc):
@@ -43,20 +44,22 @@ def _convert_value(value):
 
 def _push_result(context, result):
     if isinstance(result, basestring):
-        vedis_result_string(context, result, len(result))
+        return vedis_result_string(context, result, -1)
     elif isinstance(result, (int, long)):
-        vedis_result_int(context, result)
+        return vedis_result_int(context, result)
     elif isinstance(result, bool):
-        vedis_result_bool(context, result)
+        return vedis_result_bool(context, result)
     elif isinstance(result, float):
-        vedis_result_double(context, result)
-    vedis_result_null(context)
+        return vedis_result_double(context, result)
+    return vedis_result_null(context)
 
 _command_callback = CFUNCTYPE(
     UNCHECKED(c_int),
     POINTER(vedis_context),
     c_int,
     POINTER(POINTER(vedis_value)))
+
+_vedis_lib = _c_libraries['vedis']
 
 def wrap_command(fn):
     def inner(vedis_context, nargs, values):
@@ -445,6 +448,9 @@ class Vedis(object):
                 user_data or '')
             return inner
         return _decorator
+
+    def delete_command(self, command_name):
+        handle_return_value(vedis_delete_command(self._vedis, command_name))
 
 
 class transaction(object):

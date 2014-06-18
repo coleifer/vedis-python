@@ -445,5 +445,26 @@ class TestListObject(BaseVedisTestCase):
         self.assertEqual(l[4], None)
 
 
+class TestCustomCommands(BaseVedisTestCase):
+    def test_custom_command(self):
+        data = []
+
+        @self.db.register('XTEST')
+        def xtest(context, *params):
+            data.extend(params)
+            return 'hello'
+
+        res = self.db.execute('XTEST %s %s', ('foo', 'barbaz'), result=True)
+        self.assertEqual(data, ['foo', 'barbaz'])
+        self.assertEqual(res, 'hello')
+
+        res = self.db.execute('XTEST %s', ('single param 111',), result=True)
+        self.assertEqual(data, ['foo', 'barbaz', 'single param 111'])
+        self.assertEqual(res, 'hello')
+
+        self.db.delete_command('XTEST')
+        self.assertRaises(Exception, self.db.execute, 'XTEST')
+
+
 if __name__ == '__main__':
     unittest.main(argv=sys.argv)
