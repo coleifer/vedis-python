@@ -126,7 +126,7 @@ class Vedis(object):
                 iter_result=False):
         """Execute a Vedis command, optionally returning a result."""
         if params is not None:
-            params = map(self.escape, params)
+            params = map(self._escape, params)
             cmd = cmd % tuple(params)
 
         handle_return_value(vedis_exec(self._vedis, cmd, nlen))
@@ -233,14 +233,14 @@ class Vedis(object):
         return str(vedis_lib_version())
 
     def _flatten_list(self, args):
-        return ' '.join(map(self.escape, args))
+        return ' '.join(map(self._escape, args))
 
     def _flatten(self, kwargs):
         return ' '.join(
-            '%s %s' % (self.escape(key), self.escape(value))
+            '%s %s' % (self._escape(key), self._escape(value))
             for key, value in kwargs.items())
 
-    def escape(self, s):
+    def _escape(self, s):
         return '"%s"' % str(s).replace('"', '\\"')
 
     # Vedis key/value/string commands.
