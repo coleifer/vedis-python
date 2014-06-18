@@ -465,6 +465,27 @@ class TestCustomCommands(BaseVedisTestCase):
         self.db.delete_command('XTEST')
         self.assertRaises(Exception, self.db.execute, 'XTEST')
 
+    def test_multi_commands(self):
+        @self.db.register('CMDA')
+        def cmda(context, *params):
+            return ['aa', ['bb', ['cc', 'dd'], 'ee'], 'ff']
+
+        @self.db.register('CMDB')
+        def cmdb(context, *params):
+            return [param.title() for param in params]
+
+        self.assertEqual(self.db.CMDA(), [
+            'aa',
+            ['bb',
+             ['cc',
+              'dd'],
+             'ee'],
+            'ff',
+        ])
+        self.assertEqual(
+            self.db.CMDB('this', 'is a test', 'foo'),
+            ['This', 'Is A Test', 'Foo'])
+
 
 if __name__ == '__main__':
     unittest.main(argv=sys.argv)
