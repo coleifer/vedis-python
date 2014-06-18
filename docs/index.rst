@@ -21,7 +21,8 @@ Contents:
 
    installation
    quickstart
-
+   api
+   custom_commands
 
 
 Indices and tables
