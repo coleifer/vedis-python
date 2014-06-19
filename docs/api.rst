@@ -3,6 +3,7 @@
 API Documentation
 =================
 
+
 .. py:class:: Vedis([database=':mem:'])
 
     The :py:class:`Vedis` object provides a pythonic interface for interacting
@@ -966,6 +967,9 @@ API Documentation
         Return a generator that will successively yield values from the last-executed
         Vedis command.
 
+Hash objects
+------------
+
 .. py:class:: Hash(vedis, key)
 
     Provides a high-level API for working with Vedis hashes. As much as seemed
@@ -1008,6 +1012,9 @@ API Documentation
 
         >>> h
         <Hash: {'k3': 'v3', 'k1': 'v1'}>
+
+Set objects
+-----------
 
 .. py:class:: Set(vedis, key)
 
@@ -1068,7 +1075,10 @@ API Documentation
         >>> s & s2
         set(['v3'])
 
-.. py:clas:: List(vedis, key)
+List objects
+------------
+
+.. py:class:: List(vedis, key)
 
     Provides a high-level API for working with Vedis lists.
 
