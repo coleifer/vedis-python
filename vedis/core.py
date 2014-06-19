@@ -362,8 +362,8 @@ class Vedis(object):
             result=True)
 
     # Vedis set commands.
-    def Set(self, name):
-        return Set(self, name)
+    def Set(self, key):
+        return Set(self, key)
 
     def sadd(self, key, *values):
         return self.execute(
@@ -405,8 +405,8 @@ class Vedis(object):
         return self.execute('SLEN %s', (key,), result=True)
 
     # Vedis list commands.
-    def List(self, name):
-        return List(self, name)
+    def List(self, key):
+        return List(self, key)
 
     def lindex(self, key, idx):
         return self.execute('LINDEX %s %s', (key, idx), result=True)

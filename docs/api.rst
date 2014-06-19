@@ -382,6 +382,30 @@ API Documentation
             >>> db.base64_decode('aGVsbG8=')
             'hello'
 
+    .. py:method:: rand([lower_bound=None[, upper_bound=None]])
+
+        Return a random integer within the lower and upper bounds (inclusive).
+
+    .. py:method:: time()
+
+        Return the current GMT time, formatted as HH:MM:SS.
+
+    .. py:method:: date()
+
+        Return the current date in ISO-8601 format (YYYY-MM-DD).
+
+    .. py:method:: os()
+
+        Return a brief description of the host operating system.
+
+    .. py:method:: table_list()
+
+        Return a list of all vedis tables (i.e. Hashes, Sets, List) in memory.
+
+    .. py:method:: vedis_info()
+
+        Return detailed information about the Vedis library version.
+
     .. py:method:: Hash(key)
 
         Create a :py:class:`Hash` object, which provides a dictionary-like
@@ -415,7 +439,9 @@ API Documentation
     .. py:method:: hget(hash_key, key)
 
         Retrieve the value for the key in the Vedis hash identified by ``hash_key``.
-        If the key does not exist, ``None`` will be returned.
+
+        :returns: The value for the given key, or ``None`` if the key does not
+                  exist.
 
         Example:
 
@@ -468,9 +494,12 @@ API Documentation
 
     .. py:method:: hgetall(hash_key)
 
-        Return all items in the Vedis hash identified by ``hash_key``. If a hash
-        does not exist at the given key, ``None`` will be returned.
+        Return a ``dict`` containing all items in the Vedis hash identified
+        by ``hash_key``.
 
+        :returns: A dictionary containing the key/value pairs stored in the
+                  given Vedis hash, or ``None`` if a hash does not exist at the
+                  given key.
         :rtype: dict
 
         Example:
@@ -485,10 +514,11 @@ API Documentation
 
     .. py:method:: hitems(hash_key)
 
-        Return all items in the Vedis hash identified by ``hash_key``. If a hash
-        does not exist at the given key, ``None`` will be returned.
+        Get a list to key/value pairs stored in the given Vedis hash.
 
-        :rtype: A list of 2-tuples consisting of key/value pairs.
+        :returns: A list of key/value pairs stored in the given Vedis hash, or
+                  ``None`` if a hash does not exist at the given key.
+        :rtype: list of 2-tuples
 
         Example:
 
@@ -575,3 +605,289 @@ API Documentation
             True
             >>> db.hsetnx('my_hash', 'kx', 'vx')
             False
+
+    .. py:method:: Set(key)
+
+        Create a :py:class:`Set` object, which provides a set-like
+        interface for working with Vedis sets.
+
+        :param str key: The key for the Vedis set object.
+        :returns: a :py:class:`Set` object representing the Vedis set at the
+                  specified key.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> my_set = db.Set('my_set')
+            >>> my_set.add('v1', 'v2', 'v3')
+            3
+            >>> my_set.to_set()
+            set(['v1', 'v2', 'v3'])
+
+    .. py:method:: sadd(key, *values)
+
+        Add one or more values to a Vedis set, returning the number of
+        items added.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.sadd('my_set', 'v1', 'v2', 'v3')
+            >>> list(db.smembers('my_set'))
+            ['v1', 'v2', 'v3']
+
+    .. py:method:: scard(key)
+
+        Return the cardinality, or number of items, in the given set. If
+        a Vedis set does not exist at the given key, ``0`` will be returned.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.scard('my_set')
+            3
+            >>> db.scard('does not exist')
+            0
+
+    .. py:method:: sismember(key, value)
+
+        Return a boolean indicating whether the provided value is a member
+        of a Vedis set. If a Vedis set does not exist at the given key,
+        ``None`` will be returned.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.sismember('my_set', 'v1')
+            True
+            >>> db.sismember('my_set', 'vx')
+            False
+            >>> print db.sismember('does not exist', 'xx')
+            None
+
+    .. py:method:: spop(key)
+
+        Remove and return the last record from a Vedis set. If a Vedis set does
+        not exist at the given key, or the set is empty, ``None`` will be returned.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.sadd('my_set', 'v1', 'v2', 'v3')
+            3
+            >>> db.spop('my_set')
+            'v3'
+
+    .. py:method:: speek(key)
+
+        Return the last record from a Vedis set without removing it. If a Vedis
+        set does not exist at the given key, or the set is empty, ``None`` will
+        be returned.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.sadd('my_set', 'v1', 'v2', 'v3')
+            3
+            >>> db.speek('my_set')
+            'v3'
+
+    .. py:method:: stop(key)
+
+        Return the first record from a Vedis set without removing it.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.sadd('my_set', 'v1', 'v2', 'v3')
+            >>> db.stop('my_set')
+            'v1'
+
+    .. py:method:: srem(key, value)
+
+        Remove the given value from a Vedis set.
+
+        :returns: The number of items removed.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.sadd('my_set', 'v1', 'v2', 'v3')
+            3
+            >>> db.srem('my_set', 'v2')
+            1
+            >>> db.srem('my_set', 'v2')
+            0
+            >>> list(db.smembers('my_set'))
+            ['v1', 'v3']
+
+    .. py:method:: smembers(key)
+
+        Return all members of a given set.
+
+        :rtype: generator
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> vals = [val for val in db.smembers('my_set')]
+            >>> print vals
+            ['v1', 'v3']
+
+    .. py:method:: sdiff(k1, k2)
+
+        Return the set difference of two Vedis sets identified by ``k1`` and ``k2``.
+
+        :rtype: generator
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.sadd('my_set', 'v1', 'v2', 'v3')
+            3
+            >>> db.sadd('other_set', 'v2', 'v3', 'v4')
+            3
+            >>> list(db.sdiff('my_set', 'other_set'))
+            ['v1']
+
+    .. py:method:: sinter(k1, k2)
+
+        Return the intersection of two Vedis sets identified by ``k1`` and ``k2``.
+
+        :rtype: generator
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.sadd('my_set', 'v1', 'v2', 'v3')
+            3
+            >>> db.sadd('other_set', 'v2', 'v3', 'v4')
+            3
+            >>> list(db.sinter('my_set', 'other_set'))
+            ['v3', 'v2']
+
+    .. py:method:: List(key)
+
+        Create a :py:class:`List` object, which provides a list-like
+        interface for working with Vedis lists.
+
+        :param str key: The key for the Vedis list object.
+        :returns: a :py:class:`List` object representing the Vedis list at the
+                  specified key.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> my_list = db.List('my_list')
+            >>> my_list.append('i1', 'i2', 'i3')
+            >>> my_list[0]
+            'i1'
+            >>> my_list.pop()
+            'i1'
+            >>> len(my_list)
+            2
+
+    .. py:method:: lindex(key, idx)
+
+        Returns the element at the given index in the Vedis list. Indices are
+        zero-based, and negative indices can be used to designate elements
+        starting from the end of the list.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.lpush('my_list', 'i1', 'i2', 'i3')
+            >>> db.lindex('my_list', 0)
+            'i1'
+            >>> db.lindex('my_list', -1)
+            'i3'
+
+    .. py:method:: llen(key)
+
+        Return the length of a Vedis list.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.llen('my_list')
+            3
+            >>> db.llen('does not exist')
+            0
+
+    .. py:method:: lpop(key)
+
+        Remove and return the first element of a Vedis list. If no elements
+        exist, ``None`` is returned.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.lpush('a list', 'i1', 'i2')
+            2
+            >>> db.lpop('a list')
+            'i1'
+
+    .. py:method:: lpush(key, *values)
+
+        Append one or more values to a Vedis list, returning the number of
+        items added.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.lpush('my_list', 'i1', 'i2', 'i3')
+            3
+
+    .. py:method:: register(command_name[, user_data=None])
+
+        Function decorator used to register user-defined Vedis commands.
+        User-defined commands must accept a special ``vedis context`` as their
+        first parameter, followed by any number of parameters. The following
+        are valid return types for user-defined commands:
+
+        * lists (arbitrarily nested)
+        * strings
+        * boolean values
+        * integers
+        * floating point numbers
+        * ``None``
+
+        Here is a simple example of a custom command that converts its arguments
+        to title-case:
+
+        .. code-block:: python
+
+            @db.register('TITLE')
+            def title_cmd(vedis_ctx, *params):
+                return [param.title() for param in params]
+
+        Here is how you might call your user-defined function:
+
+        .. code-block:: pycon
+
+            >>> db.execute('TITLE %s %s %s', ['foo', 'this is a test', 'bar'], result=True)
+            ['Foo', 'This Is A Test', 'Bar']
+
+        You can also use the short-hand "magic" method for calling a command:
+
+        .. code-block:: pycon
+
+            >>> db.TITLE('foo', 'this is a test', 'bar')
+            ['Foo', 'This Is A Test', 'Bar']
+
