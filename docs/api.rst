@@ -56,7 +56,7 @@ API Documentation
         Return a generator that will successively yield values from the last-executed
         Vedis command.
 
-    .. py:method:: store(key, value)
+    .. py:method:: set(key, value)
 
         Store a value in the given key.
 
@@ -68,8 +68,8 @@ API Documentation
         .. code-block:: python
 
             db = Vedis()
-            db.store('some key', 'some value')
-            db.store('another key', 'another value')
+            db.set('some key', 'some value')
+            db.set('another key', 'another value')
 
         You can also use the dictionary-style ``[key] = value`` to store a value:
 
@@ -77,23 +77,20 @@ API Documentation
 
             db['some key'] = 'some value'
 
-    .. py:method:: fetch(key[, bufsize=4096[, determine_buffer_size=False]])
+    .. py:method:: get(key)
 
-        Retrieve the value stored at the given ``key``. If no value exists, a ``KeyError`` will be raised.
+        Retrieve the value stored at the given ``key``. If no value exists, ``None`` will be returned.
 
         :param str key: Identifier to retrieve
-        :param int bufsize: Integer representing size of buffer to create for value.
-        :param bool determine_buffer_size: If ``True``, then a :py:meth:`~Vedis.strlen` call will be made to determine the correct size for the buffer.
-        :returns: The data stored at the given key.
-        :raises: ``KeyError`` if the key does not exist.
+        :returns: The data stored at the given key or ``None``.
 
         Example:
 
         .. code-block:: python
 
             db = Vedis()
-            db.store('some key', 'some value')
-            value = db.fetch('some key')
+            db.set('some key', 'some value')
+            value = db.get('some key')
 
         You can also use the dictionary-style ``[key]`` lookup to retrieve a value:
 
@@ -104,10 +101,12 @@ API Documentation
     .. py:method:: append(key, value)
 
         Append the given ``value`` to the data stored in the ``key``. If no data exists, the operation
-        is equivalent to :py:meth:`~Vedis.store`.
+        is equivalent to :py:meth:`~Vedis.set`.
 
         :param str key: The identifier of the value to append to.
         :param value: The value to append.
+        :returns: The length of the value after the new data is appended.
+        :rtype: int
 
     .. py:method:: exists(key)
 
@@ -122,8 +121,8 @@ API Documentation
 
             def get_expensive_data():
                 if not db.exists('cached-data'):
-                    db.store('cached-data', calculate_expensive_data())
-                return db.fetch('cached-data')
+                    db.set('cached-data', calculate_expensive_data())
+                return db.get('cached-data')
 
         You can also use the python ``in`` keyword to determine whether a key exists:
 
@@ -754,6 +753,76 @@ API Documentation
 
             >>> db.lpush('my_list', 'i1', 'i2', 'i3')
             3
+
+    .. py:method:: kv_store(key, value)
+
+        Store a value in the given key using the Key/Value API.
+
+        :param str key: Identifier used for storing data.
+        :param any value: A value to store in Vedis.
+
+        Example:
+
+        .. code-block:: python
+
+            db = Vedis()
+            db.kv_store('some key', 'some value')
+            db.kv_store('another key', 'another value')
+
+    .. py:method:: kv_fetch(key[, bufsize=4096[, determine_buffer_size=False]])
+
+        Retrieve the value stored at the given ``key`` using the Key/Value API. If no value exists, a ``KeyError`` will be raised.
+
+        :param str key: Identifier to retrieve
+        :param int bufsize: Integer representing size of buffer to create for value.
+        :param bool determine_buffer_size: If ``True``, then a :py:meth:`~Vedis.strlen` call will be made to determine the correct size for the buffer.
+        :returns: The data stored at the given key.
+        :raises: ``KeyError`` if the key does not exist.
+
+        Example:
+
+        .. code-block:: python
+
+            db = Vedis()
+            db.kv_store('some key', 'some value')
+            value = db.kv_fetch('some key')
+
+    .. py:method:: kv_append(key, value)
+
+        Append the given ``value`` to the data stored in the ``key`` using the Key/Value API. If no data exists, the operation
+        is equivalent to :py:meth:`~Vedis.kv_store`.
+
+        :param str key: The identifier of the value to append to.
+        :param value: The value to append.
+
+    .. py:method:: kv_exists(key)
+
+        Return whether the given ``key`` exists in the database using the Key/Value API.
+
+        :param str key:
+        :returns: A boolean value indicating whether the given ``key`` exists in the database.
+
+        Example:
+
+        .. code-block:: python
+
+            def get_expensive_data():
+                if not db.kv_exists('cached-data'):
+                    db.kv_store('cached-data', calculate_expensive_data())
+                return db.kv_fetch('cached-data')
+
+    .. py:method:: kv_delete(key)
+
+        Remove the key and its associated value from the database using the Key/Value API.
+
+        :param str key: The key to remove from the database.
+
+        Example:
+
+        .. code-block:: python
+
+            def clear_cache():
+                db.kv_delete('cached-data')
 
     .. py:method:: register(command_name[, user_data=None])
 

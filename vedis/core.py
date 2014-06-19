@@ -160,7 +160,7 @@ class Vedis(object):
                 raise StopIteration
 
     # Key/Value APIs.
-    def store(self, key, value):
+    def kv_store(self, key, value):
         """Store a value in the given key."""
         key, value = str(key), str(value)
         handle_return_value(vedis_kv_store(
@@ -170,7 +170,7 @@ class Vedis(object):
             value,
             len(value)))
 
-    def fetch(self, key, buf_size=4096, determine_buffer_size=False):
+    def kv_fetch(self, key, buf_size=4096, determine_buffer_size=False):
         """Retrieve a value in the given key."""
         key = str(key)
         if determine_buffer_size:
@@ -189,7 +189,7 @@ class Vedis(object):
             raise KeyError(key)
         handle_return_value(rc)
 
-    def append(self, key, value):
+    def kv_append(self, key, value):
         key, value = str(key), str(value)
         handle_return_value(vedis_kv_append(
             self._vedis,
@@ -198,13 +198,13 @@ class Vedis(object):
             value,
             len(value)))
 
-    def exists(self, key):
+    def kv_exists(self, key):
         nbytes = vedis_int64(0)
         key = str(key)
         res = vedis_kv_fetch(self._vedis, key, len(key), None, byref(nbytes))
         return res == VEDIS_OK
 
-    def delete(self, key):
+    def kv_delete(self, key):
         key = str(key)
         handle_return_value(vedis_kv_delete(self._vedis, key, len(key)))
 
@@ -219,20 +219,28 @@ class Vedis(object):
     def random_number(self):
         return vedis_util_random_num(self._vedis)
 
-    __setitem__ = store
-    __getitem__ = fetch
-    __delitem__ = delete
+    # Command APIs.
+    def get(self, key):
+        return self.execute('GET %s', (key,), result=True)
+
+    def set(self, key, value):
+        return self.execute('SET %s %s', (key, value), result=True)
+
+    def delete(self, key):
+        return self.execute('DEL %s', (key,), result=True)
+
+    def append(self, key, value):
+        return self.execute('APPEND %s %s', (key, value), result=True)
+
+    def exists(self, key):
+        return self.execute('EXISTS %s', (key,), result=True)
+
+    def __setitem__(self, key, value):
+        return self.set(key, value)
+
     __contains__ = exists
-
-    def update(self, **kwargs):
-        return self.mset(**kwargs)
-
-    def transaction(self):
-        return transaction(self)
-
-    @property
-    def vedis_version(self):
-        return str(vedis_lib_version())
+    __delitem__ = delete
+    __getitem__ = get
 
     def _flatten_list(self, args):
         return ' '.join(map(self._escape, args))
@@ -266,6 +274,9 @@ class Vedis(object):
     def mset(self, **kwargs):
         return self.execute('MSET %s' % self._flatten(kwargs), result=True)
 
+    def update(self, **kwargs):
+        return self.mset(**kwargs)
+
     def msetnx(self, **kwargs):
         return self.execute('MSETNX %s' % self._flatten(kwargs), result=True)
 
@@ -283,35 +294,6 @@ class Vedis(object):
 
     def decr_by(self, key, amt):
         return self.execute('DECRBY %s %s', (key, amt), result=True)
-
-    def csv(self, csv_data, delim=None, enclosure=None, escape=None):
-        args = [csv_data]
-        if delim or (enclosure or escape):
-            args.append(delim or ',')
-        if enclosure or escape:
-            args.append(enclosure or '"')
-        if escape:
-            args.append(escape)
-        param_str = ' '.join(['%s'] * len(args))
-        return self.execute('GETCSV %s' % param_str, args, iter_result=True)
-
-    def strip_tags(self, html):
-        return self.execute('STRIP_TAG %s', (html,), result=True)
-
-    def str_split(self, s, nchars=1):
-        return self.execute('STR_SPLIT %s %s', (s, nchars), iter_result=True)
-
-    def size_format(self, nbytes):
-        return self.execute('SIZE_FMT %s', (nbytes,), result=True)
-
-    def soundex(self, s):
-        return self.execute('SOUNDEX %s', (s,), result=True)
-
-    def base64(self, data):
-        return self.execute('BASE64 %s', (data,), result=True)
-
-    def base64_decode(self, data):
-        return self.execute('BASE64_DEC %s', (data,), result=True)
 
     # Vedis Hash commands.
     def Hash(self, key):
@@ -449,8 +431,41 @@ class Vedis(object):
     def os(self):
         return self.execute('OS', result=True)
 
+    def csv(self, csv_data, delim=None, enclosure=None, escape=None):
+        args = [csv_data]
+        if delim or (enclosure or escape):
+            args.append(delim or ',')
+        if enclosure or escape:
+            args.append(enclosure or '"')
+        if escape:
+            args.append(escape)
+        param_str = ' '.join(['%s'] * len(args))
+        return self.execute('GETCSV %s' % param_str, args, iter_result=True)
+
+    def strip_tags(self, html):
+        return self.execute('STRIP_TAG %s', (html,), result=True)
+
+    def str_split(self, s, nchars=1):
+        return self.execute('STR_SPLIT %s %s', (s, nchars), iter_result=True)
+
+    def size_format(self, nbytes):
+        return self.execute('SIZE_FMT %s', (nbytes,), result=True)
+
+    def soundex(self, s):
+        return self.execute('SOUNDEX %s', (s,), result=True)
+
+    def base64(self, data):
+        return self.execute('BASE64 %s', (data,), result=True)
+
+    def base64_decode(self, data):
+        return self.execute('BASE64_DEC %s', (data,), result=True)
+
     def table_list(self):
         return self.execute('TABLE_LIST', result=True)
+
+    @property
+    def vedis_version(self):
+        return str(vedis_lib_version())
 
     def vedis_info(self):
         return self.execute('VEDIS', result=True)
@@ -463,6 +478,9 @@ class Vedis(object):
 
     def rollback(self):
         return self.execute('ROLLBACK', result=True)
+
+    def transaction(self):
+        return transaction(self)
 
     def commit_on_success(self, fn):
         @wraps(fn)
@@ -515,8 +533,8 @@ class Vedis(object):
                     result=True)
             return _call
 
-        raise AttributeError("%s object has no attribute '%s'",
-                             type(self).__name__, attr)
+        raise AttributeError("%s object has no attribute '%s'" % (
+                             type(self).__name__, attr))
 
 
 class transaction(object):
