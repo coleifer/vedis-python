@@ -524,6 +524,20 @@ class TestCustomCommands(BaseVedisTestCase):
             self.db.CMDB('this', 'is a test', 'foo'),
             ['This', 'Is A Test', 'Foo'])
 
+    def test_command_context(self):
+        @self.db.register('MAGIC_SET')
+        def magic_set(context, *params):
+            for param in params:
+                context[param] = param.title()
+            return len(params)
+
+        res = self.db.MAGIC_SET('foo', 'bar', 'this is a test')
+        self.assertEqual(res, 3)
+
+        self.assertEqual(self.db['foo'], 'Foo')
+        self.assertEqual(self.db['bar'], 'Bar')
+        self.assertEqual(self.db['this is a test'], 'This Is A Test')
+
 
 if __name__ == '__main__':
     unittest.main(argv=sys.argv)

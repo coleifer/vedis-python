@@ -85,7 +85,7 @@ def wrap_command(fn):
     def inner(vedis_context, nargs, values):
         converted_args = [_convert_value(values[i]) for i in range(nargs)]
         try:
-            ret = fn(vedis_context, *converted_args)
+            ret = fn(VedisContext(vedis_context), *converted_args)
         except:
             return VEDIS_UNKNOWN
         else:
@@ -554,6 +554,54 @@ class transaction(object):
             except:
                 self.vedis.rollback()
                 raise
+
+
+class VedisContext(object):
+    def __init__(self, vedis_context):
+        self._vedis_context = vedis_context
+
+    def kv_store(self, key, value):
+        key, value = str(key), str(value)
+        handle_return_value(vedis_context_kv_store(
+            self._vedis_context,
+            key,
+            len(key),
+            value,
+            len(value)))
+
+    def kv_append(self, key, value):
+        key, value = str(key), str(value)
+        handle_return_value(vedis_context_kv_append(
+            self._vedis_context,
+            key,
+            len(key),
+            value,
+            len(value)))
+
+    def kv_fetch(self, key, buf_size=4096):
+        key = str(key)
+        buf = create_string_buffer(buf_size)
+        nbytes = vedis_int64(buf_size)
+        rc = vedis_context_kv_fetch(
+            self._vedis_context,
+            key,
+            len(key),
+            byref(buf),
+            byref(nbytes))
+        if rc == VEDIS_OK:
+            return buf.raw[:nbytes.value]
+        elif rc == SXERR_NOTFOUND:
+            raise KeyError(key)
+        handle_return_value(rc)
+
+    def kv_delete(self, key):
+        key = str(key)
+        handle_return_value(
+            vedis_context_kv_delete(self._vedis_context, key, len(key)))
+
+    __setitem__ = kv_store
+    __getitem__ = kv_fetch
+    __delitem__ = kv_delete
 
 
 class VedisObject(object):
