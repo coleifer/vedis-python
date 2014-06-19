@@ -75,7 +75,9 @@ API Documentation
 
     .. py:method:: exists(key)
 
-        Return whether the given ``key`` exists in the database.
+        Return whether the given ``key`` exists in the database. Oddly, this only
+        seems to work for simple key/value pairs. If, for instance, you have stored
+        a hash at the given key, ``exists`` will return ``False``.
 
         :param str key:
         :returns: A boolean value indicating whether the given ``key`` exists in the database.
