@@ -3,8 +3,6 @@
 API Documentation
 =================
 
-.. warning:: This API documentation is not yet complete!
-
 .. py:class:: Vedis([database=':mem:'])
 
     The :py:class:`Vedis` object provides a pythonic interface for interacting
