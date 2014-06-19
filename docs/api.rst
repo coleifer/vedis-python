@@ -1107,3 +1107,96 @@ List objects
 
         >>> l.pop()
         'v1'
+
+Vedis Context
+-------------
+
+When a user-defined command is executed, the first parameter sent to the
+callback is a ``vedis_context`` instance. The ``vedis_context`` allows user-defined
+commands to set return codes (handled automatically by vedis-python), but
+perhaps more interestingly, modify other keys and values in the database.
+
+In this way, your user-defined command can set, get, and delete keys in
+the vedis database. Because the vedis_context APIs are a bit low-level,
+vedis-python wraps the ``vedis_context``, providing a nicer API to work with.
+
+.. py:class:: VedisContext(vedis_context)
+
+    This class will almost never be instantiated directly, but will instead
+    by created by vedis-python when executing a user-defined callback.
+
+    :param vedis_context: A pointer to a ``vedis_context``.
+
+    Usage:
+
+    .. code-block:: python
+
+        @db.register('TITLE_VALUES')
+        def title_values(context, *values):
+            """
+            Create key/value pairs for each value consisting of the
+            original value -> the title-cased version of the value.
+
+            Returns the number of values processed.
+            """
+            for value in values:
+                context[value] = value.title()
+            return len(values)
+
+    .. code-block:: pycon
+
+        >>> db.TITLE_VALUES('val 1', 'another value')
+        2
+        >>> db['val 1']
+        'Val 1'
+        >>> db['another val']
+        'Another Val'
+
+    .. py:method:: kv_fetch(key[, bufsize=4096])
+
+        Return the value of the given key. Identical to :py:meth:`Vedis.kv_fetch` with the exception that the
+        buffer size must be explicitly set and cannot be determined at run-time.
+
+        Instead of calling ``kv_fetch()`` you can also use a dictionary-style
+        lookup on the context:
+
+        .. code-block:: python
+
+            @db.register('MY_COMMAND')
+            def my_command(context, *values):
+                some_val = context['the key']
+                # ...
+
+    .. py:method:: kv_store(key, value)
+
+        Set the value of the given key. Identical to :py:meth:`Vedis.kv_store`.
+
+        Instead of calling ``kv_store()`` you can also use a dictionary-style
+        assignment on the context:
+
+        .. code-block:: python
+
+            @db.register('MY_COMMAND')
+            def my_command(context, *values):
+                context['some key'] = 'some value'
+                # ...
+
+    .. py:method:: kv_append(key, value)
+
+        Append a value to the given key. If the key does not exist, the
+        operation is equivalent to :py:meth:`~VedisContext.kv_store`. Identical
+        to :py:meth:`Vedis.kv_append`.
+
+    .. py:method:: kv_delete(key)
+
+        Delete the given key. Identical to :py:meth:`Vedis.kv_append`.
+
+        Instead of calling ``kv_delete()`` you can also use a the python
+        ``del`` keyword:
+
+        .. code-block:: python
+
+            @db.register('MY_COMMAND')
+            def my_command(context, *values):
+                del context['some key']
+                # ...
