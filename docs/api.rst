@@ -20,42 +20,6 @@ API Documentation
 
         Close the database connection.
 
-    .. py:method:: execute(cmd[, params=None[, nlen=-1[, result=False[, iter_result=False]]]])
-
-        Execute a Vedis command, optionally returning the result of the command.
-
-        :param str cmd: The command to execute.
-        :param list params: A list of parameters to pass into the command.
-        :param int nlen: The number of parameters. By default this value is ``-1``, which means the count will be determined automatically.
-        :param bool result: Return the result of this command.
-        :param bool iter_result: Return an iterator that will yield the results of this command.
-
-        Example:
-
-        .. code-block:: python
-
-            db = Vedis()
-
-            # Execute a command, ignoring the result.
-            db.execute('HSET %s %s %s', ['hash_key', 'key', 'some value'])
-
-            # Execute a command that returns a single result.
-            val = db.execute('HGET %s %s', ['hash_key', 'key'], result=True)
-
-            # Execute a command return returns multiple values.
-            gen = db.execute('HKEYS %s', ['hash_key'], iter_result=True)
-            for key in gen:
-                print 'Hash "hash_key" contains key "%s"' % key
-
-    .. py:method:: get_result()
-
-        Return the result of the last-executed Vedis command.
-
-    .. py:method:: iter_result()
-
-        Return a generator that will successively yield values from the last-executed
-        Vedis command.
-
     .. py:method:: set(key, value)
 
         Store a value in the given key.
@@ -965,6 +929,42 @@ API Documentation
     .. py:method:: vedis_info()
 
         Return detailed information about the Vedis library version.
+
+    .. py:method:: execute(cmd[, params=None[, nlen=-1[, result=False[, iter_result=False]]]])
+
+        Execute a Vedis command, optionally returning the result of the command.
+
+        :param str cmd: The command to execute.
+        :param list params: A list of parameters to pass into the command.
+        :param int nlen: The number of parameters. By default this value is ``-1``, which means the count will be determined automatically.
+        :param bool result: Return the result of this command.
+        :param bool iter_result: Return an iterator that will yield the results of this command.
+
+        Example:
+
+        .. code-block:: python
+
+            db = Vedis()
+
+            # Execute a command, ignoring the result.
+            db.execute('HSET %s %s %s', ['hash_key', 'key', 'some value'])
+
+            # Execute a command that returns a single result.
+            val = db.execute('HGET %s %s', ['hash_key', 'key'], result=True)
+
+            # Execute a command return returns multiple values.
+            gen = db.execute('HKEYS %s', ['hash_key'], iter_result=True)
+            for key in gen:
+                print 'Hash "hash_key" contains key "%s"' % key
+
+    .. py:method:: get_result()
+
+        Return the result of the last-executed Vedis command.
+
+    .. py:method:: iter_result()
+
+        Return a generator that will successively yield values from the last-executed
+        Vedis command.
 
 .. py:class:: Hash(vedis, key)
 
