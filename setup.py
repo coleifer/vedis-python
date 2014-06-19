@@ -44,7 +44,7 @@ class GenerateCtypesWrapper(build_py):
 
 setup(
     name='vedis',
-    version='0.1.4',
+    version='0.1.5',
     description='Python bindings for Vedis, the embedded NoSQL database.',
     author='Charles Leifer',
     author_email='',
