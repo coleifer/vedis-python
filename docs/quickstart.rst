@@ -3,7 +3,7 @@
 Quickstart
 ==========
 
-Below is a sample interactive console session designed to show some of the basic features and functionality of the vedis-python library. Full API documentation will be available soon.
+Below is a sample interactive console session designed to show some of the basic features and functionality of the vedis-python library. Also check out the :ref:`full API docs <api>`.
 
 Key/value features
 ------------------
