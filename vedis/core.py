@@ -170,9 +170,11 @@ class Vedis(object):
             value,
             len(value)))
 
-    def fetch(self, key, buf_size=4096):
+    def fetch(self, key, buf_size=4096, determine_buffer_size=False):
         """Retrieve a value in the given key."""
         key = str(key)
+        if determine_buffer_size:
+            buf_size = self.strlen(key)
         buf = create_string_buffer(buf_size)
         nbytes = vedis_int64(buf_size)
         rc = vedis_kv_fetch(

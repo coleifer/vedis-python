@@ -77,11 +77,13 @@ API Documentation
 
             db['some key'] = 'some value'
 
-    .. py:method:: fetch(key[, bufsize=4096])
+    .. py:method:: fetch(key[, bufsize=4096[, determine_buffer_size=False]])
 
         Retrieve the value stored at the given ``key``. If no value exists, a ``KeyError`` will be raised.
 
         :param str key: Identifier to retrieve
+        :param int bufsize: Integer representing size of buffer to create for value.
+        :param bool determine_buffer_size: If ``True``, then a :py:meth:`~Vedis.strlen` call will be made to determine the correct size for the buffer.
         :returns: The data stored at the given key.
         :raises: ``KeyError`` if the key does not exist.
 

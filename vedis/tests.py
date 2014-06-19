@@ -49,6 +49,15 @@ class TestKeyValueAPI(BaseVedisTestCase):
         self.db.append('k3', 'v3')
         self.assertEqual(self.db.fetch('k3'), 'v3')
 
+    def test_fetch_bufsize(self):
+        long_str = 'a' * 8192
+        self.db.store('k1', long_str)
+        res = self.db.fetch('k1')
+        self.assertEqual(len(res), 4096)
+
+        res = self.db.fetch('k1', determine_buffer_size=True)
+        self.assertEqual(len(res), 8192)
+
     def test_delete(self):
         self.set_k1_k2()
 
