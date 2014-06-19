@@ -111,6 +111,16 @@ class TestBasicCommands(BaseVedisTestCase):
         self.assertIn('k2', self.db)
         self.assertNotIn('k1', self.db)
 
+    def test_exists_and_object_types(self):
+        # For some reason, `EXIST` does not work with object types.
+        self.db.hset('my_hash', 'k1', 'v1')
+        self.db.sadd('my_set', 'v1')
+        self.db.lpush('my_list', 'i1')
+
+        self.assertFalse(self.db.exists('my_hash'))
+        self.assertFalse(self.db.exists('my_set'))
+        self.assertFalse(self.db.exists('my_list'))
+
     def test_mget(self):
         self.set_k1_k2()
         res = self.db.mget('k1', 'missing', 'k2')
