@@ -18,7 +18,8 @@ You can use Vedis like a dictionary for simple key/value lookups:
     >>> db['k1']
     'v1'
 
-    >>> db.append('k1', 'more data')
+    >>> db.append('k1', 'more data')  # Returns length of value after appending new data.
+    11
     >>> db['k1']
     'v1more data'
 
@@ -77,7 +78,7 @@ Vedis supports nested key/value lookups which have the additional benefit of sup
 
     >>> h = db.Hash('some key')
     >>> h['k1'] = 'v1'
-    >>> k.update(k2='v2', k3='v3')
+    >>> h.update(k2='v2', k3='v3')
 
     >>> h
     <Hash: {'k3': 'v3', 'k2': 'v2', 'k1': 'v1'}>
