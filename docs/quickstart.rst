@@ -13,7 +13,7 @@ You can use Vedis like a dictionary for simple key/value lookups:
 .. code-block:: pycon
 
     >>> from vedis import Vedis
-    >>> db = Vedis(':memory:')  # Create an in-memory database. Alternatively you could supply a filename for an on-disk database.
+    >>> db = Vedis(':mem:')  # Create an in-memory database. Alternatively you could supply a filename for an on-disk database.
     >>> db['k1'] = 'v1'
     >>> db['k1']
     'v1'
