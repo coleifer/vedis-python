@@ -382,3 +382,196 @@ API Documentation
             >>> db.base64_decode('aGVsbG8=')
             'hello'
 
+    .. py:method:: Hash(key)
+
+        Create a :py:class:`Hash` object, which provides a dictionary-like
+        interface for working with Vedis hashes.
+
+        :param str key: The key for the Vedis hash object.
+        :returns: a :py:class:`Hash` object representing the Vedis hash at the
+                  specified key.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> my_hash = db.Hash('my_hash')
+            >>> my_hash.update(k1='v1', k2='v2')
+            >>> my_hash.to_dict()
+            {'k2': 'v2', 'k1': 'v1'}
+
+    .. py:method:: hset(hash_key, key, value)
+
+        Set the value for the key in the Vedis hash identified by ``hash_key``.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.hset('my_hash', 'k3', 'v3')
+            >>> db.hget('my_hash', 'k3')
+            'v3'
+
+    .. py:method:: hget(hash_key, key)
+
+        Retrieve the value for the key in the Vedis hash identified by ``hash_key``.
+        If the key does not exist, ``None`` will be returned.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.hset('my_hash', 'k3', 'v3')
+            >>> db.hget('my_hash', 'k3')
+            'v3'
+
+    .. py:method:: hdel(hash_key, key)
+
+        Delete a ``key`` from a Vedis hash. If the key does not exist in the
+        hash, the operation is a no-op.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.hdel('my_hash', 'k3')
+            >>> db.hget('my_hash', 'k3') is None
+            True
+
+    .. py:method:: hkeys(hash_key)
+
+        Get the keys for the Vedis hash identified by ``hash_key``.
+
+        :returns: All keys for the Vedis hash.
+        :rtype: generator
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> list(db.hkeys('my_hash'))
+            ['k2', 'k1']
+
+    .. py:method:: hvals(hash_key)
+
+        Get the values for the Vedis hash identified by ``hash_key``.
+
+        :returns: All values for the Vedis hash.
+        :rtype: generator
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> list(db.hvals('my_hash'))
+            ['v2', 'v1']
+
+    .. py:method:: hgetall(hash_key)
+
+        Return all items in the Vedis hash identified by ``hash_key``. If a hash
+        does not exist at the given key, ``None`` will be returned.
+
+        :rtype: dict
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.hgetall('my_hash')
+            {'k2': 'v2', 'k1': 'v1'}
+
+            >>> db.hgetall('does not exist') is None
+            True
+
+    .. py:method:: hitems(hash_key)
+
+        Return all items in the Vedis hash identified by ``hash_key``. If a hash
+        does not exist at the given key, ``None`` will be returned.
+
+        :rtype: A list of 2-tuples consisting of key/value pairs.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.hitems('my_hash')
+            [('k2', 'v2'), ('k1', 'v1')]
+
+    .. py:method:: hlen(hash_key)
+
+        Return the number of items stored in a Vedis hash. If a hash does not
+        exist at the given key, ``0`` will be returned.
+
+        :rtype: int
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.hlen('my_hash')
+            2
+            >>> db.hlen('does not exist')
+            0
+
+    .. py:method:: hexists(hash_key, key)
+
+        Return whether the given key is stored in a Vedis hash. If a hash does not
+        exist at the given key, ``False`` will be returned.
+
+        :rtype: bool
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.hexists('my_hash', 'k1')
+            True
+            >>> db.hexists('my_hash', 'kx')
+            False
+            >>> db.hexists('does not exist', 'kx')
+            False
+
+    .. py:method:: hmset(hash_key, **kwargs)
+
+        Set multiple key/value pairs in the given Vedis hash. This method is
+        analagous to Python's ``dict.update``.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.hmset('my_hash', k1='v1', k2='v2', k3='v3', k4='v4')
+            >>> db.hgetall('my_hash')
+            {'k3': 'v3', 'k2': 'v2', 'k1': 'v1', 'k4': 'v4'}
+
+    .. py:method:: hmget(hash_key, *keys)
+
+        Return the values for multiple keys in a Vedis hash. If the key does
+        not exist in the given hash, ``None`` will be returned for the missing
+        key.
+
+        :rtype: generator
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> list(db.hmget('my_hash', 'k1', 'k4', 'missing', 'k2'))
+            ['v1', 'v4', None, 'v2']
+
+    .. py:method:: hsetnx(hash_key, key, value)
+
+        Set a value for the given key in a Vedis hash only if the key
+        does not already exist. Returns boolean indicating whether the
+        value was successfully set.
+
+        :rtype: bool
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.hsetnx('my_hash', 'kx', 'vx')
+            True
+            >>> db.hsetnx('my_hash', 'kx', 'vx')
+            False
