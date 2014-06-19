@@ -29,6 +29,13 @@ Usage:
     >>> print db.execute('TITLE "testing" "this is a test" "another"', result=True)
     ['Testing', 'This Is A Test', 'Another']
 
+You can also use the short-hand:
+
+.. code-block:: pycon
+
+    >>> print db.TITLE('testing', 'this is a test', 'another')
+    ['Testing', 'This Is A Test', 'Another']
+
 
 Valid return types for user-defined commands
 --------------------------------------------

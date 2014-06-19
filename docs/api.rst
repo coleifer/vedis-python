@@ -307,105 +307,6 @@ API Documentation
         Decrement the given ``key`` by the integer ``amt``. This method has the same behavior as
         :py:meth:`~Vedis.decr`.
 
-    .. py:method:: strip_tags(html)
-
-        Remove HTML formatting from a given string.
-
-        :param str html: A string containing HTML.
-        :returns: A string with all HTML removed.
-
-        Example:
-
-        .. code-block:: pycon
-
-            >>> db.strip_tags('<p>This <span>is</span> <a href="#">a <b>test</b></a>.</p>')
-            'This is a test.'
-
-    .. py:method:: str_split(s[, nchars=1])
-
-        Split the given string, ``s``.
-
-        :returns: A generator that successively yields sub-strings.
-
-        Example:
-
-        .. code-block:: pycon
-
-            >>> list(db.str_split('abcdefghijklmnop', 5))
-            ['abcde', 'fghij', 'klmno', 'p']
-
-    .. py:method:: size_format(nbytes)
-
-        Return a user-friendly representation of a given number of bytes.
-
-        Example:
-
-        .. code-block:: pycon
-
-            >>> db.size_format(1337)
-            '1.3 KB'
-            >>> db.size_format(1337000)
-            '1.2 MB'
-
-    .. py:method:: soundex(s)
-
-        Calculate the ``soundex`` value for a given string.
-
-        Example:
-
-        .. code-block:: pycon
-
-            >>> db.soundex('howdy')
-            'H300'
-            >>> db.soundex('huey')
-            'H000'
-
-    .. py:method:: base64(data)
-
-        Encode ``data`` in base64.
-
-        Example:
-
-        .. code-block:: pycon
-
-            >>> db.base64('hello')
-            'aGVsbG8='
-
-    .. py:method:: base64_decode(data)
-
-        Decode the base64-encoded ``data``.
-
-        Example:
-
-        .. code-block:: pycon
-
-            >>> db.base64_decode('aGVsbG8=')
-            'hello'
-
-    .. py:method:: rand([lower_bound=None[, upper_bound=None]])
-
-        Return a random integer within the lower and upper bounds (inclusive).
-
-    .. py:method:: time()
-
-        Return the current GMT time, formatted as HH:MM:SS.
-
-    .. py:method:: date()
-
-        Return the current date in ISO-8601 format (YYYY-MM-DD).
-
-    .. py:method:: os()
-
-        Return a brief description of the host operating system.
-
-    .. py:method:: table_list()
-
-        Return a list of all vedis tables (i.e. Hashes, Sets, List) in memory.
-
-    .. py:method:: vedis_info()
-
-        Return detailed information about the Vedis library version.
-
     .. py:method:: Hash(key)
 
         Create a :py:class:`Hash` object, which provides a dictionary-like
@@ -891,3 +792,239 @@ API Documentation
             >>> db.TITLE('foo', 'this is a test', 'bar')
             ['Foo', 'This Is A Test', 'Bar']
 
+        For more information, see the :ref:`custom_commands` section.
+
+    .. py:method:: delete_command(command_name)
+
+        Unregister a custom command.
+
+    .. py:method:: strip_tags(html)
+
+        Remove HTML formatting from a given string.
+
+        :param str html: A string containing HTML.
+        :returns: A string with all HTML removed.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.strip_tags('<p>This <span>is</span> <a href="#">a <b>test</b></a>.</p>')
+            'This is a test.'
+
+    .. py:method:: str_split(s[, nchars=1])
+
+        Split the given string, ``s``.
+
+        :returns: A generator that successively yields sub-strings.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> list(db.str_split('abcdefghijklmnop', 5))
+            ['abcde', 'fghij', 'klmno', 'p']
+
+    .. py:method:: size_format(nbytes)
+
+        Return a user-friendly representation of a given number of bytes.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.size_format(1337)
+            '1.3 KB'
+            >>> db.size_format(1337000)
+            '1.2 MB'
+
+    .. py:method:: soundex(s)
+
+        Calculate the ``soundex`` value for a given string.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.soundex('howdy')
+            'H300'
+            >>> db.soundex('huey')
+            'H000'
+
+    .. py:method:: base64(data)
+
+        Encode ``data`` in base64.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.base64('hello')
+            'aGVsbG8='
+
+    .. py:method:: base64_decode(data)
+
+        Decode the base64-encoded ``data``.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.base64_decode('aGVsbG8=')
+            'hello'
+
+    .. py:method:: rand([lower_bound=None[, upper_bound=None]])
+
+        Return a random integer within the lower and upper bounds (inclusive).
+
+    .. py:method:: time()
+
+        Return the current GMT time, formatted as HH:MM:SS.
+
+    .. py:method:: date()
+
+        Return the current date in ISO-8601 format (YYYY-MM-DD).
+
+    .. py:method:: os()
+
+        Return a brief description of the host operating system.
+
+    .. py:method:: table_list()
+
+        Return a list of all vedis tables (i.e. Hashes, Sets, List) in memory.
+
+    .. py:method:: vedis_info()
+
+        Return detailed information about the Vedis library version.
+
+.. py:class:: Hash(vedis, key)
+
+    Provides a high-level API for working with Vedis hashes. As much as seemed
+    sensible, the :py:class:`Hash` acts like a python dictionary.
+
+    .. note::
+        This class should not be constructed directly, but through the
+        factory method :py:meth:`Vedis.Hash`.
+
+    Here is an example of how you might use the various ``Hash`` APIs:
+
+    .. code-block:: pycon
+
+        >>> h = db.Hash('my_hash')
+
+        >>> h['k1'] = 'v1'
+        >>> h.update(k2='v2', k3='v3')
+
+        >>> len(h)
+        3
+
+        >>> 'k1' in h
+        True
+        >>> 'k4' in h
+        False
+
+        >>> h.to_dict()
+        {'k3': 'v3', 'k2': 'v2', 'k1': 'v1'}
+
+        >>> list(h.keys())
+        ['k1', 'k3', 'k2']
+        >>> list(h.values())
+        ['v1', 'v3', 'v2']
+        >>> h.items()
+        [('k1', 'v1'), ('k3', 'v3'), ('k2', 'v2')]
+
+        >>> del h['k2']
+        >>> h.items()
+        [('k1', 'v1'), ('k3', 'v3')]
+
+        >>> h
+        <Hash: {'k3': 'v3', 'k1': 'v1'}>
+
+.. py:class:: Set(vedis, key)
+
+    Provides a high-level API for working with Vedis sets. As much as seemed
+    sensible, the :py:class:`Set` acts like a python set.
+
+    .. note::
+        This class should not be constructed directly, but through the
+        factory method :py:meth:`Vedis.Set`.
+
+    Here is an example of how you might use the various ``Set`` APIs:
+
+    .. code-block:: pycon
+
+        >>> s = db.Set('my_set')
+
+        >>> s.add('v1', 'v2', 'v1', 'v3')
+        4
+        >>> len(s)
+        3
+
+        >>> [item for item in s]
+        ['v1', 'v2', 'v3']
+
+        >>> s.top()
+        'v1'
+        >>> s.peek()
+        'v3'
+        >>> s.pop()
+        'v3'
+
+        >>> 'v2' in s
+        True
+        >>> 'v3' in s
+        False
+
+        >>> s.add('v3', 'v4')
+        2
+        >>> s.remove('v4')
+        1
+        >>> s.to_set()
+        set(['v1', 'v2', 'v3'])
+
+    Vedis also supports set difference and intersection:
+
+    .. code-block:: pycon
+
+        >>> s2 = db.Set('other_set')
+        >>> s2.add('v3', 'v4', 'v5')
+        3
+
+        >>> s - s2
+        set(['v1', 'v2'])
+
+        >>> s2 - s
+        set(['v4', 'v5'])
+
+        >>> s & s2
+        set(['v3'])
+
+.. py:clas:: List(vedis, key)
+
+    Provides a high-level API for working with Vedis lists.
+
+    .. note::
+        This class should not be constructed directly, but through the
+        factory method :py:meth:`Vedis.List`.
+
+    Here is an example of how you might use the various ``List`` APIs:
+
+    .. code-block:: pycon
+
+        >>> l = db.List('my_list')
+
+        >>> l.append('v1', 'v2', 'v3')
+        3
+        >>> l.append('v4')
+        4
+
+        >>> len(l)
+        4
+
+        >>> l[0]
+        'v1'
+        >>> l[-1]
+        'v4'
+
+        >>> l.pop()
+        'v1'
