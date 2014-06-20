@@ -104,10 +104,15 @@ class Vedis(object):
     """
     Vedis database python bindings.
     """
-    def __init__(self, database=':mem:'):
+    def __init__(self, database=':mem:', open_manually=False):
+        self.database = database
         self._vedis = POINTER(vedis)()
         self._command_registry = {}
-        rc = vedis_open(byref(self._vedis), database)
+        if not open_manually:
+            self.open()
+
+    def open(self):
+        rc = vedis_open(byref(self._vedis), self.database)
         if rc != VEDIS_OK:
             raise Exception('Unable to open Vedis database')
 
