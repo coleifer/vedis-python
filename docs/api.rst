@@ -4,18 +4,25 @@ API Documentation
 =================
 
 
-.. py:class:: Vedis([database=':mem:'])
+.. py:class:: Vedis([database=':mem:'[, open_manually=False]])
 
     The :py:class:`Vedis` object provides a pythonic interface for interacting
     with `vedis databases <http://vedis.symisc.net/>`_. Vedis is a lightweight,
     embedded NoSQL database modeled after Redis.
 
     :param str database: The path to the database file.
+    :param bool open_manually: If set to ``True``, the database will not be
+        opened automatically upon instantiation and must be opened by a call
+        to :py:meth:`~Vedis.open`.
 
     .. note::
         Vedis supports in-memory databases, which can be created by passing
         in ``':mem:'`` as the database file. This is the default behavior if
         no database file is specified.
+
+    .. py:method:: open()
+
+        Open the database connection.
 
     .. py:method:: close()
 
