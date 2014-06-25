@@ -1,4 +1,4 @@
-![](http://media.charlesleifer.com/blog/p1403202931.62.png)
+![](http://media.charlesleifer.com/blog/photos/vedis-python.png)
 
 Python bindings for the Vedis embedded NoSQL database. Vedis is a fun, fast, embedded database modeled after Redis.
 
