@@ -429,7 +429,7 @@ class TestTransaction(BaseVedisTestCase):
         self.assertTrue(self.db.begin())
         self.db['k1'] = 'v1'
         self.assertTrue(self.db.rollback())
-        self.assertRaises(KeyError, lambda: self.db['k1'])
+        self.assertFalse(self.db.exists('k1'))
 
 
 class TestHashObject(BaseVedisTestCase):
