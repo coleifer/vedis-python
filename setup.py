@@ -17,6 +17,7 @@ class GenerateCtypesWrapper(build_py):
         cur_dir = os.path.realpath(os.path.dirname(__file__))
         wrapper = os.path.join(cur_dir, 'vedis', '_vedis.py')
         subprocess.check_call([
+            'python',
             os.path.join('ctypesgen', 'ctypesgen.py'),
             os.path.join('vedis', 'src', 'vedis.h'),
             '-L',
