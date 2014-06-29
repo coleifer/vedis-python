@@ -1,5 +1,6 @@
 import base64
 import csv
+import os
 import re
 from StringIO import StringIO
 import sys
@@ -396,6 +397,16 @@ class TestMiscCommands(BaseVedisTestCase):
 
 
 class TestTransaction(BaseVedisTestCase):
+    def setUp(self):
+        self.db = Vedis('test.db')
+
+    def tearDown(self):
+        try:
+            self.db.close()
+        finally:
+            if os.path.exists('test.db'):
+                os.unlink('test.db')
+
     def test_transaction(self):
         self.db['k1'] = 'v1'
 
@@ -412,16 +423,13 @@ class TestTransaction(BaseVedisTestCase):
         self.assertEqual(self.db['k2'], 'v2')
 
         self.assertRaises(Exception, fail)
-        # Currently this does not work and the rollback does not work. I am
-        # not sure why.
-        #self.assertFalse(self.db.exists('k3'))
+        self.assertFalse(self.db.exists('k3'))
 
     def test_base_transaction_methods(self):
         self.assertTrue(self.db.begin())
         self.db['k1'] = 'v1'
         self.assertTrue(self.db.rollback())
-        # Again, I am not sure why this does not work as I expect.
-        #self.assertRaises(KeyError, lambda: self.db['k1'])
+        self.assertRaises(KeyError, lambda: self.db['k1'])
 
 
 class TestHashObject(BaseVedisTestCase):
