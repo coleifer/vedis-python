@@ -6,7 +6,7 @@ Python bindings for the Vedis embedded NoSQL database. Vedis is a fun, fast, emb
 
 Vedis does lots of little things.
 
-[vedis homepage](http://vedis.symisc.net/) and [license](http://vedis.symisc.net/licensing.html).
+[vedis homepage](http://vedis.symisc.net/) and [license](http://vedis.symisc.net/licensing.html). If you like Vedis, you might also want to check out [UnQLite](http://unqlite.org/), an embedded key/value database and JSON document store (python bindings: [unqlite-python](http://unqlite-python.readthedocs.org/)).
 
 Installation
 ------------

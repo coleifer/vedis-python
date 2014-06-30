@@ -13,6 +13,9 @@ The source code for vedis-python is `hosted on GitHub <https://github.com/coleif
 .. note::
   If you encounter any bugs in the library, please `open an issue <https://github.com/coleifer/vedis-python/issues/new>`_, including a description of the bug and any related traceback.
 
+.. note::
+  If you like Vedis you might also want to check out `UnQLite <http://unqlite.org>`_, an embedded key/value database and JSON document store (python bindings: `unqlite-python <http://unqlite-python.readthedocs.org>`_.
+
 Contents:
 
 .. toctree::
