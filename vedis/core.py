@@ -619,6 +619,9 @@ class Hash(VedisObject):
     def get(self, key):
         return self._vedis.hget(self._key, key)
 
+    def mget(self, *keys):
+        return self._vedis.hmget(self._key, *keys)
+
     def set(self, key, value):
         return self._vedis.hset(self._key, key, value)
 

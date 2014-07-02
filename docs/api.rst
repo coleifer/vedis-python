@@ -1019,6 +1019,9 @@ Hash objects
         >>> h.items()
         [('k1', 'v1'), ('k3', 'v3')]
 
+        >>> list(h.mget('k3', 'kx', 'k1'))
+        ['v3', None, 'v1']
+
         >>> h
         <Hash: {'k3': 'v3', 'k1': 'v1'}>
 

@@ -455,6 +455,9 @@ class TestHashObject(BaseVedisTestCase):
             'k4': 'v4',
         })
 
+        data = h.mget('k3', 'kx', 'k2')
+        self.assertEqual(list(data), ['v3', None, 'v2'])
+
 
 class TestSetObject(BaseVedisTestCase):
     def test_set_object(self):
