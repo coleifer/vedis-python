@@ -6,12 +6,14 @@ Python bindings for the Vedis embedded NoSQL database. Vedis is a fun, fast, emb
 
 ### Note
 
-The authors of UnQLite, Symisc, have informed me that UnQLite is no longer being developed actively. I would recommend using a different library like:
+The authors of Vedis, Symisc, have informed me that Vedis is no longer being developed actively. I would recommend using a different library like:
 
 * LevelDB
 * RocksDB
 * Kyotocabinet
 * BerkeleyDB
+* Redis
+* Ledisdb
 
 ### Features
 
