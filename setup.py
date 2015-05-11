@@ -4,6 +4,7 @@ from setuptools import setup
 from setuptools.command.build_py import build_py
 from setuptools.command.install import install as InstallCommand
 
+import sys
 import os
 import subprocess
 
@@ -16,9 +17,10 @@ class GenerateCtypesWrapper(build_py):
     def run(self):
         cur_dir = os.path.realpath(os.path.dirname(__file__))
         wrapper = os.path.join(cur_dir, 'vedis', '_vedis.py')
+        ctypesgen_dir = 'ctypesgen-%d' % sys.version_info[0]
         subprocess.check_call([
-            'python',
-            os.path.join('ctypesgen', 'ctypesgen.py'),
+            'python2',
+            os.path.join(ctypesgen_dir, 'ctypesgen.py'),
             os.path.join('vedis', 'src', 'vedis.h'),
             '-L',
             './',
