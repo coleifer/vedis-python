@@ -1,6 +1,13 @@
 import ctypes, os, sys
 from ctypes import *
 
+if sys.version_info[0] == 3:
+    def cmp(a, b):
+        return (a > b) - (a < b)
+    sys.maxint = sys.maxsize
+    basestring = (str, bytes)
+    long = int
+
 _int_types = (c_int16, c_int32)
 if hasattr(ctypes, 'c_int64'):
     # Some builds of ctypes apparently do not have c_int64
@@ -10,7 +17,6 @@ if hasattr(ctypes, 'c_int64'):
 for t in _int_types:
     if sizeof(t) == sizeof(c_size_t):
         c_ptrdiff_t = t
-del t
 del _int_types
 
 class c_void(Structure):
@@ -214,8 +220,8 @@ class String(MutableString, Union):
                 ('data', c_char_p)]
 
     def __init__(self, obj=""):
-        if isinstance(obj, (str, unicode, UserString)):
-            self.data = str(obj)
+        if isinstance(obj, basestring) or isinstance(obj, UserString):
+            self.data = str(obj).encode('utf8')
         else:
             self.raw = obj
 
