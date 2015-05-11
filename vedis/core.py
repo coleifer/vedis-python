@@ -30,7 +30,7 @@ def _convert_value(value):
     if vedis_value_is_string(value):
         nbytes = c_int()
         res = vedis_value_to_string(value, pointer(nbytes))
-        return res.raw[:nbytes.value].replace('\\"', '"')
+        return res.raw[:nbytes.value].decode('utf8').replace('\\"', '"')
     elif vedis_value_is_array(value):
         accum = []
         while True:
