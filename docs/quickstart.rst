@@ -24,21 +24,8 @@ You can use Vedis like a dictionary for simple key/value lookups:
     'v1more data'
 
     >>> del db['k1']
-    >>> db['k1']
-
-    ---------------------------------------------------------------------------
-    KeyError                                  Traceback (most recent call last)
-    <ipython-input-8-a988c6a20437> in <module>()
-    ----> 1 db['k1']
-
-    /home/charles/tmp/scrap/z1/src/vedis/vedis/core.pyc in fetch(self, key, buf_size)
-        125             return buf.raw[:nbytes.value]
-        126         elif rc == SXERR_NOTFOUND:
-    --> 127             raise KeyError(key)
-        128         handle_return_value(rc)
-        129
-
-    KeyError: 'k1'
+    >>> db['k1'] is None
+    True
 
 You can set and get multiple items at a time:
 
