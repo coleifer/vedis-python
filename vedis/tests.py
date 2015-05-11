@@ -2,7 +2,10 @@ import base64
 import csv
 import os
 import re
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import sys
 import unittest
 
@@ -13,6 +16,11 @@ except ImportError:
                      'installed.\n')
     sys.stderr.flush()
     raise
+
+
+if sys.version_info[0] == 3:
+    basestring = str
+    long = int
 
 
 class BaseVedisTestCase(unittest.TestCase):

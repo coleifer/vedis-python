@@ -1,8 +1,14 @@
+import sys
 from contextlib import contextmanager
 from functools import wraps
 
 from vedis._vedis import *
 from vedis._vedis import _libs as _c_libraries
+
+
+if sys.version_info[0] == 3:
+    basestring = str
+    long = int
 
 
 def handle_return_value(rc):
