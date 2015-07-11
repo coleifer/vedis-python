@@ -346,6 +346,16 @@ cdef class Vedis(object):
     def __contains__(self, basestring key):
         return self.exists(key)
 
+    cpdef execute(self, basestring cmd, bint result=False):
+        vedis_exec(self.database, <const char *>cmd, -1)
+        if result:
+            return self.get_result()
+
+    cpdef get_result(self):
+        cdef vedis_value* value = <vedis_value *>0
+        vedis_exec_result(self.database, &value)
+        return vedis_value_to_python(value)
+
     cdef check_call(self, int result):
         """
         Check for a successful Vedis library call, raising an exception
@@ -469,3 +479,82 @@ cdef class Transaction(object):
             except:
                 self.vedis.rollback()
                 raise
+
+
+cdef vedis_value_to_python(vedis_value *ptr):
+    cdef int nbytes
+    cdef list accum
+    cdef vedis_value *item = <vedis_value *>0
+
+    if vedis_value_is_string(ptr):
+        return str(vedis_value_to_string(ptr, &nbytes))[:nbytes]
+    elif vedis_value_is_array(ptr):
+        accum = []
+        while True:
+            item = vedis_array_next_elem(ptr)
+            if not item:
+                break
+            accum.append(vedis_value_to_python(item))
+        return accum
+    elif vedis_value_is_int(ptr):
+        return vedis_value_to_int(ptr)
+    elif vedis_value_is_float(ptr):
+        return vedis_value_to_double(ptr)
+    elif vedis_value_is_bool(ptr):
+        return bool(vedis_value_to_bool(ptr))
+    elif vedis_value_is_null(ptr):
+        return None
+    raise TypeError('Unrecognized type.')
+
+
+cdef vedis_value* python_to_vedis_value(vedis_context *context, python_value):
+    if isinstance(python_value, (list, tuple)):
+        return create_vedis_array(context, python_value)
+    else:
+        return create_vedis_scalar(context, python_value)
+
+
+cdef vedis_value* create_vedis_scalar(vedis_context *context, python_value):
+    cdef vedis_value *ptr
+    ptr = vedis_context_new_scalar(context)
+    if isinstance(python_value, unicode):
+        vedis_value_string(ptr, python_value.encode('utf-8'), -1)
+    elif isinstance(python_value, basestring):
+        vedis_value_string(ptr, python_value, -1)
+    elif isinstance(python_value, (int, long)):
+        vedis_value_int(ptr, python_value)
+    elif isinstance(python_value, bool):
+        vedis_value_bool(ptr, python_value)
+    elif isinstance(python_value, float):
+        vedis_value_double(ptr, python_value)
+    elif python_value is None:
+        vedis_value_null(ptr)
+    else:
+        raise TypeError('Unsupported type: %s.' % type(python_value))
+
+
+cdef vedis_value* create_vedis_array(vedis_context *context, list items):
+    cdef vedis_value *ptr
+    cdef vedis_value *list_item
+    ptr = vedis_context_new_array(context)
+    for item in items:
+        list_item = python_to_vedis_value(context, item)
+        vedis_array_insert(ptr, list_item)
+    return ptr
+
+
+cdef push_result(vedis_context *context, python_value):
+    if isinstance(python_value, unicode):
+        vedis_result_string(context, python_value.encode('utf-8'), -1)
+    elif isinstance(python_value, basestring):
+        vedis_result_string(context, python_value, -1)
+    elif isinstance(python_value, (list, tuple)):
+        vedis_result_value(context, create_vedis_array(context, python_value))
+    elif isinstance(python_value, (int, long)):
+        vedis_result_int(context, python_value)
+    elif isinstance(python_value, bool):
+        vedis_result_bool(context, python_value)
+    elif isinstance(python_value, float):
+        vedis_result_double(context, python_value)
+    else:
+        vedis_result_null(context)
