@@ -230,7 +230,7 @@ cdef class Vedis(object):
         if self.open_database:
             self.open()
 
-    def open(self):
+    cpdef open(self):
         """Open database connection."""
         cdef int ret
 
@@ -243,7 +243,7 @@ cdef class Vedis(object):
 
         self.is_open = True
 
-    def close(self):
+    cpdef close(self):
         """Close database connection."""
         if self.is_open:
             self.check_call(vedis_close(self.database))
@@ -346,8 +346,12 @@ cdef class Vedis(object):
     def __contains__(self, basestring key):
         return self.exists(key)
 
-    cpdef execute(self, basestring cmd, bint result=False):
-        vedis_exec(self.database, <const char *>cmd, -1)
+    cpdef execute(self, basestring cmd, tuple params=None, bint result=False):
+        cdef list escaped_params
+        if params is not None:
+            escaped_params = [self._escape(p) for p in params]
+            cmd = cmd % tuple(escaped_params)
+        self.check_call(vedis_exec(self.database, <const char *>cmd, -1))
         if result:
             return self.get_result()
 
@@ -454,6 +458,27 @@ cdef class Vedis(object):
     cpdef int random_int(self):
         """Generate a random integer."""
         return vedis_util_random_num(self.database)
+
+    cdef basestring _flatten_list(self, list args):
+        return ' '.join(map(self._escape, args))
+
+    cdef basestring _flatten(self, dict kwargs):
+        cdef basestring key
+        return ' '.join(
+            '%s %s' % (self._escape(key), self._escape(kwargs[key]))
+            for key in kwargs)
+
+    cdef basestring _escape(self, basestring s):
+        return '"%s"' % str(s).replace('"', '\\"')
+
+    cpdef int strlen(self, basestring key):
+        return self.execute('STRLEN %s', (key,), True)
+
+    cpdef copy(self, basestring src, basestring dest):
+        return self.execute('COPY %s %s', (src, dest), True)
+
+    cpdef move(self, basestring src, basestring dest):
+        return self.execute('MOVE %s %s', (src, dest), True)
 
     def lib_version(self):
         return vedis_lib_version()
