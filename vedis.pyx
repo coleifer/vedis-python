@@ -334,11 +334,19 @@ cdef class Vedis(object):
 
         raise self._build_exception_for_error(ret)
 
+    cpdef update(self, dict values):
+        cdef basestring key
+        for key in values:
+            self.store(key, values[key])
+
     def __setitem__(self, basestring key, basestring value):
         self.store(key, value)
 
-    def __getitem__(self, basestring key):
-        return self.fetch(key)
+    def __getitem__(self, key):
+        if isinstance(key, basestring):
+            return self.fetch(key)
+        elif isinstance(key, list):
+            return self.mget(key)
 
     def __delitem__(self, basestring key):
         self.delete(key)
@@ -346,7 +354,7 @@ cdef class Vedis(object):
     def __contains__(self, basestring key):
         return self.exists(key)
 
-    cpdef execute(self, basestring cmd, tuple params=None, bint result=False):
+    cpdef execute(self, basestring cmd, tuple params=None, bint result=True):
         cdef list escaped_params
         if params is not None:
             escaped_params = [self._escape(p) for p in params]
@@ -440,11 +448,6 @@ cdef class Vedis(object):
                 return fn(*args, **kwargs)
         return wrapper
 
-    cpdef update(self, dict values):
-        cdef basestring key
-        for key in values:
-            self.store(key, values[key])
-
     cpdef random_string(self, int nbytes):
         """Generate a random string of given length."""
         cdef char *buf
@@ -459,8 +462,214 @@ cdef class Vedis(object):
         """Generate a random integer."""
         return vedis_util_random_num(self.database)
 
+    # Misc.
+    cpdef bint copy(self, basestring src, basestring dest):
+        return self.execute('COPY %s %s', (src, dest))
+
+    cpdef bint move(self, basestring src, basestring dest):
+        return self.execute('MOVE %s %s', (src, dest))
+
+    cpdef int rand(self, int minimum, int maximum):
+        return self.execute('RAND %s %s' % (minimum, maximum))
+
+    cpdef basestring randstr(self, int nbytes):
+        return self.execute('RANDSTR %s' % nbytes)
+
+    cpdef basestring time(self):
+        return self.execute('TIME')
+
+    cpdef basestring date(self):
+        return self.execute('DATE')
+
+    cpdef basestring operating_system(self):
+        return self.execute('OS')
+
+    cpdef basestring strip_tags(self, basestring html):
+        return self.execute('STRIP_TAG %s', (html,))
+
+    cpdef list str_split(self, basestring s, int nchars=1):
+        return self.execute('STR_SPLIT %s %s', (s, nchars))
+
+    cpdef basestring size_format(self, int nbytes):
+        return self.execute('SIZE_FMT %s', (nbytes,))
+
+    cpdef basestring soundex(self, basestring s):
+        return self.execute('SOUNDEX %s', (s,))
+
+    cpdef basestring base64(self, basestring data):
+        return self.execute('BASE64 %s', (data,))
+
+    cpdef basestring base64_decode(self, basestring data):
+        return self.execute('BASE64_DEC %s', (data,))
+
+    cpdef list table_list(self):
+        return self.execute('TABLE_LIST')
+
+    # Strings.
+    cpdef list mget(self, list keys):
+        return self.execute('MGET %s' % self._flatten_list(keys))
+
+    cpdef bint mset(self, dict kw):
+        return self.execute('MSET %s' % self._flatten(kw))
+
+    cpdef bint setnx(self, basestring key, basestring value):
+        return self.execute('SETNX %s %s', (key, value))
+
+    cpdef bint msetnx(self, dict kw):
+        return self.execute('MSETNX %s' % self._flatten(kw))
+
+    cpdef get_set(self, basestring key, basestring value):
+        return self.execute('GETSET %s %s', (key, value))
+
+    cpdef int strlen(self, basestring key):
+        return self.execute('STRLEN %s', (key,))
+
+    # Counters.
+    cpdef int incr(self, basestring key):
+        return self.execute('INCR %s', (key,))
+
+    cpdef int decr(self, basestring key):
+        return self.execute('DECR %s', (key,))
+
+    cpdef int incr_by(self, basestring key, int amount):
+        return self.execute('INCRBY %s %s', (key, amount))
+
+    cpdef int decr_by(self, basestring key, int amount):
+        return self.execute('DECRBY %s %s', (key, amount))
+
+    # Hash methods.
+    cpdef bint hset(self, basestring hash_key, basestring key, basestring value):
+        return self.execute('HSET %s %s %s', (hash_key, key, value))
+
+    cpdef bint hsetnx(self, basestring hash_key, basestring key, basestring value):
+        return self.execute('HSETNX %s %s %s', (hash_key, key, value))
+
+    cpdef basestring hget(self, basestring hash_key, basestring key):
+        return self.execute('HGET %s %s', (hash_key, key))
+
+    cpdef int hdel(self, basestring hash_key, basestring key):
+        return self.execute('HDEL %s %s', (hash_key, key))
+
+    cpdef int hmdel(self, basestring hash_key, list keys):
+        return self.execute(
+            'HDEL %%s %s' % self._flatten_list(keys),
+            (hash_key,))
+
+    cpdef list hkeys(self, basestring hash_key):
+        return self.execute('HKEYS %s', (hash_key,))
+
+    cpdef list hvals(self, basestring hash_key):
+        return self.execute('HVALS %s', (hash_key,))
+
+    cpdef dict hgetall(self, basestring hash_key):
+        cdef list results
+        results = self.execute('HGETALL %s', (hash_key,))
+        if results:
+            return dict(zip(results[::2], results[1::2]))
+        else:
+            return {}
+
+    cpdef list hitems(self, basestring hash_key):
+        cdef list results
+        results = self.execute('HGETALL %s', (hash_key,))
+        if results:
+            return zip(results[::2], results[1::2])
+        else:
+            return []
+
+    cpdef int hlen(self, basestring hash_key):
+        return self.execute('HLEN %s', (hash_key,))
+
+    cpdef bint hexists(self, basestring hash_key, basestring key):
+        return self.execute('HEXISTS %s %s', (hash_key, key))
+
+    cpdef int hmset(self, basestring hash_key, dict data):
+        return self.execute(
+            'HMSET %%s %s' % self._flatten(data),
+            (hash_key,))
+
+    cpdef list hmget(self, basestring hash_key, list keys):
+        return self.execute(
+            'HMGET %%s %s' % self._flatten_list(keys),
+            (hash_key,))
+
+    # Set methods.
+    cpdef int sadd(self, basestring key, list values):
+        return self.execute(
+            'SADD %%s %s' % self._flatten_list(values),
+            (key,))
+
+    cpdef int scard(self, basestring key):
+        return self.execute('SCARD %s', (key,))
+
+    cpdef bint sismember(self, basestring key, basestring value):
+        return self.execute('SISMEMBER %s %s', (key, value))
+
+    cpdef basestring spop(self, basestring key):
+        return self.execute('SPOP %s', (key,))
+
+    cpdef basestring speek(self, basestring key):
+        return self.execute('SPEEK %s', (key,))
+
+    cpdef basestring stop(self, basestring key):
+        return self.execute('STOP %s', (key,))
+
+    cpdef bint srem(self, basestring key, basestring value):
+        return self.execute('SREM %s %s', (key, value))
+
+    cpdef bint smrem(self, basestring key, list values):
+        return self.execute(
+            'SREM %%s %s' % self._flatten_list(values),
+            (key,))
+
+    cpdef set smembers(self, basestring key):
+        cdef list results
+        results = self.execute('SMEMBERS %s', (key,))
+        return set(results)
+
+    cpdef set sdiff(self, basestring k1, basestring k2):
+        cdef list results
+        results = self.execute('SDIFF %s %s', (k1, k2))
+        return set(results)
+
+    cpdef set sinter(self, basestring k1, basestring k2):
+        cdef list results
+        results = self.execute('SINTER %s %s', (k1, k2))
+        return set(results)
+
+    cpdef int slen(self, basestring key):
+        return self.execute('SLEN %s', (key,))
+
+    # List methods.
+    cpdef basestring lindex(self, basestring key, int index):
+        return self.execute('LINDEX %s %s', (key, index))
+
+    cpdef int llen(self, basestring key):
+        return self.execute('LLEN %s', (key,))
+
+    cpdef basestring lpop(self, basestring key):
+        return self.execute('LPOP %s', (key,))
+
+    cpdef int lpush(self, basestring key, basestring value):
+        return self.execute('LPUSH %s %s', (key, value))
+
+    cpdef int lmpush(self, basestring key, list values):
+        return self.execute(
+            'LPUSH %%s %s' % self._flatten_list(values),
+            (key,))
+
+    cpdef int lpushx(self, basestring key, basestring value):
+        return self.execute('LPUSHX %s %s', (key, value))
+
+    cpdef int lmpushx(self, basestring key, list values):
+        return self.execute(
+            'LPUSHX %%s %s' % self._flatten_list(values),
+            (key,))
+
+    # Internal helpers.
     cdef basestring _flatten_list(self, list args):
-        return ' '.join(map(self._escape, args))
+        cdef basestring key
+        return ' '.join(self._escape(key) for key in args)
 
     cdef basestring _flatten(self, dict kwargs):
         cdef basestring key
@@ -471,17 +680,17 @@ cdef class Vedis(object):
     cdef basestring _escape(self, basestring s):
         return '"%s"' % str(s).replace('"', '\\"')
 
-    cpdef int strlen(self, basestring key):
-        return self.execute('STRLEN %s', (key,), True)
-
-    cpdef copy(self, basestring src, basestring dest):
-        return self.execute('COPY %s %s', (src, dest), True)
-
-    cpdef move(self, basestring src, basestring dest):
-        return self.execute('MOVE %s %s', (src, dest), True)
-
     def lib_version(self):
         return vedis_lib_version()
+
+    cpdef Hash(self, basestring key):
+        return Hash(self, key)
+
+    cpdef Set(self, basestring key):
+        return Set(self, key)
+
+    cpdef List(self, basestring key):
+        return List(self, key)
 
 
 cdef class Transaction(object):
@@ -504,6 +713,129 @@ cdef class Transaction(object):
             except:
                 self.vedis.rollback()
                 raise
+
+
+cdef class Hash(object):
+    cdef Vedis vedis
+    cdef basestring key
+
+    def __init__(self, Vedis vedis, basestring key):
+        self.vedis = vedis
+        self.key = key
+
+    def get(self, basestring key):
+        return self.vedis.hget(self.key, key)
+
+    def mget(self, *keys):
+        return self.vedis.hmget(self.key, list(keys))
+
+    def set(self, basestring key, basestring value):
+        return self.vedis.hset(self.key, key, value)
+
+    def delete(self, basestring key):
+        self.vedis.hdel(self.key, key)
+
+    def mdelete(self, list keys):
+        return self.vedis.hmdel(self.key, keys)
+
+    def keys(self):
+        return self.vedis.hkeys(self.key)
+
+    def values(self):
+        return self.vedis.hvals(self.key)
+
+    def items(self):
+        return self.vedis.hitems(self.key)
+
+    def update(self, **kwargs):
+        return self.vedis.hmset(self.key, kwargs)
+
+    def to_dict(self):
+        return self.vedis.hgetall(self.key)
+
+    def __len__(self):
+        return self.vedis.hlen(self.key)
+
+    def __contains__(self, basestring key):
+        return self.vedis.hexists(self.key, key)
+
+    def __setitem__(self, basestring key, basestring value):
+        self.vedis.hset(self.key, key, value)
+
+    def __getitem__(self, basestring key):
+        return self.vedis.hget(self.key, key)
+
+    def __delitem__(self, basestring key):
+        self.vedis.hdel(self.key, key)
+
+    def __iter__(self):
+        return iter(self.vedis.hkeys(self.key))
+
+    def __repr__(self):
+        return '<Hash: %s>' % self.key
+
+
+cdef class Set(object):
+    cdef Vedis vedis
+    cdef basestring key
+
+    def __init__(self, Vedis vedis, basestring key):
+        self.vedis = vedis
+        self.key = key
+
+    def add(self, *values):
+        return self.vedis.sadd(self.key, list(values))
+
+    def __len__(self):
+        return self.vedis.scard(self.key)
+
+    def __contains__(self, value):
+        return self.vedis.sismember(self.key, value)
+
+    def pop(self):
+        return self.vedis.spop(self.key)
+
+    def peek(self):
+        return self.vedis.speek(self.key)
+
+    def top(self):
+        return self.vedis.stop(self.key)
+
+    def remove(self, *values):
+        return self.vedis.smrem(self.key, list(values))
+
+    def __iter__(self):
+        return iter(self.vedis.smembers(self.key))
+
+    def to_set(self):
+        return self.vedis.smembers(self.key)
+
+    def __sub__(self, rhs):
+        return self.vedis.sdiff(self.key, rhs.key)
+
+    def __and__(self, rhs):
+        return self.vedis.sinter(self.key, rhs.key)
+
+
+cdef class List(object):
+    cdef Vedis vedis
+    cdef basestring key
+
+    def __init__(self, Vedis vedis, basestring key):
+        self.vedis = vedis
+        self.key = key
+
+    def __getitem__(self, int index):
+        return self.vedis.lindex(self.key, index)
+
+    def __len__(self):
+        return self.vedis.llen(self.key)
+
+    def pop(self):
+        return self.vedis.lpop(self.key)
+
+    def append(self, *values):
+        return self.vedis.lmpush(self.key, values)
 
 
 cdef vedis_value_to_python(vedis_value *ptr):
