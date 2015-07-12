@@ -488,10 +488,10 @@ cdef class Vedis(object):
         return self.execute('STRIP_TAG %s', (html,))
 
     cpdef list str_split(self, basestring s, int nchars=1):
-        return self.execute('STR_SPLIT %s %s', (s, nchars))
+        return self.execute('STR_SPLIT %%s %s' % nchars, (s,))
 
     cpdef basestring size_format(self, int nbytes):
-        return self.execute('SIZE_FMT %s', (nbytes,))
+        return self.execute('SIZE_FMT %s' % nbytes)
 
     cpdef basestring soundex(self, basestring s):
         return self.execute('SOUNDEX %s', (s,))
@@ -506,6 +506,12 @@ cdef class Vedis(object):
         return self.execute('TABLE_LIST')
 
     # Strings.
+    cpdef basestring get(self, basestring key):
+        return self.fetch(key)
+
+    cpdef basestring set(self, basestring key, basestring value):
+        return self.store(key, value)
+
     cpdef list mget(self, list keys):
         return self.execute('MGET %s' % self._flatten_list(keys))
 
@@ -532,10 +538,10 @@ cdef class Vedis(object):
         return self.execute('DECR %s', (key,))
 
     cpdef int incr_by(self, basestring key, int amount):
-        return self.execute('INCRBY %s %s', (key, amount))
+        return self.execute('INCRBY %%s %s' % amount, (key,))
 
     cpdef int decr_by(self, basestring key, int amount):
-        return self.execute('DECRBY %s %s', (key, amount))
+        return self.execute('DECRBY %%s %s' % amount, (key,))
 
     # Hash methods.
     cpdef bint hset(self, basestring hash_key, basestring key, basestring value):
@@ -594,7 +600,10 @@ cdef class Vedis(object):
             (hash_key,))
 
     # Set methods.
-    cpdef int sadd(self, basestring key, list values):
+    cpdef int sadd(self, basestring key, basestring value):
+        return self.execute('SADD %s %s', (key, value))
+
+    cpdef int smadd(self, basestring key, list values):
         return self.execute(
             'SADD %%s %s' % self._flatten_list(values),
             (key,))
@@ -617,7 +626,7 @@ cdef class Vedis(object):
     cpdef bint srem(self, basestring key, basestring value):
         return self.execute('SREM %s %s', (key, value))
 
-    cpdef bint smrem(self, basestring key, list values):
+    cpdef int smrem(self, basestring key, list values):
         return self.execute(
             'SREM %%s %s' % self._flatten_list(values),
             (key,))
@@ -642,7 +651,7 @@ cdef class Vedis(object):
 
     # List methods.
     cpdef basestring lindex(self, basestring key, int index):
-        return self.execute('LINDEX %s %s', (key, index))
+        return self.execute('LINDEX %%s %s' % index, (key,))
 
     cpdef int llen(self, basestring key):
         return self.execute('LLEN %s', (key,))
@@ -776,15 +785,15 @@ cdef class Hash(object):
 
 
 cdef class Set(object):
-    cdef Vedis vedis
-    cdef basestring key
+    cdef readonly Vedis vedis
+    cdef readonly basestring key
 
     def __init__(self, Vedis vedis, basestring key):
         self.vedis = vedis
         self.key = key
 
     def add(self, *values):
-        return self.vedis.sadd(self.key, list(values))
+        return self.vedis.smadd(self.key, list(values))
 
     def __len__(self):
         return self.vedis.scard(self.key)
@@ -825,7 +834,7 @@ cdef class List(object):
         self.vedis = vedis
         self.key = key
 
-    def __getitem__(self, int index):
+    def __getitem__(self, index):
         return self.vedis.lindex(self.key, index)
 
     def __len__(self):
@@ -834,7 +843,10 @@ cdef class List(object):
     def pop(self):
         return self.vedis.lpop(self.key)
 
-    def append(self, *values):
+    def append(self, value):
+        return self.vedis.lpush(self.key, value)
+
+    def extend(self, values):
         return self.vedis.lmpush(self.key, values)
 
 
@@ -844,7 +856,7 @@ cdef vedis_value_to_python(vedis_value *ptr):
     cdef vedis_value *item = <vedis_value *>0
 
     if vedis_value_is_string(ptr):
-        return str(vedis_value_to_string(ptr, &nbytes))[:nbytes]
+        return str(vedis_value_to_string(ptr, &nbytes))[:nbytes].replace('\\"', '"')
     elif vedis_value_is_array(ptr):
         accum = []
         while True:

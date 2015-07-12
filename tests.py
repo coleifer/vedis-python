@@ -39,86 +39,56 @@ class BaseVedisTestCase(unittest.TestCase):
 
 
 class TestKeyValueAPI(BaseVedisTestCase):
-    def set_k1_k2(self):
-        # Overridden to use kv API.
-        self.db.kv_store('k1', 'v1')
-        self.db.kv_store('k2', 'v2')
-
     def test_kv_api(self):
-        self.db.kv_store('k1', 'v1')
-        self.db.kv_store('k2', 'v2')
-        self.assertEqual(self.db.kv_fetch('k1'), 'v1')
-        self.assertEqual(self.db.kv_fetch('k2'), 'v2')
-        self.assertRaises(KeyError, self.db.kv_fetch, 'k3')
+        self.db.store('k1', 'v1')
+        self.db.store('k2', 'v2')
+        self.assertEqual(self.db.fetch('k1'), 'v1')
+        self.assertEqual(self.db.fetch('k2'), 'v2')
+        self.assertRaises(KeyError, self.db.fetch, 'k3')
 
-        self.db.kv_append('k1', 'V1')
-        self.assertEqual(self.db.kv_fetch('k1'), 'v1V1')
+        self.db.append('k1', 'V1')
+        self.assertEqual(self.db.fetch('k1'), 'v1V1')
 
-        self.db.kv_append('k3', 'v3')
-        self.assertEqual(self.db.kv_fetch('k3'), 'v3')
+        self.db.append('k3', 'v3')
+        self.assertEqual(self.db.fetch('k3'), 'v3')
 
-    def test_fetch_bufsize(self):
-        long_str = 'a' * 8192
-        self.db.kv_store('k1', long_str)
-        res = self.db.kv_fetch('k1')
-        self.assertEqual(len(res), 4096)
+        self.assertTrue(self.db.exists('k1'))
+        self.db.delete('k1')
+        self.assertFalse(self.db.exists('k1'))
 
-        res = self.db.kv_fetch('k1', determine_buffer_size=True)
-        self.assertEqual(len(res), 8192)
+        self.assertRaises(KeyError, lambda: self.db.delete('kx'))
 
-    def test_delete(self):
-        self.set_k1_k2()
+        self.db['k3'] = ''
+        self.assertTrue(self.db.exists('k3'))
 
-        self.db.kv_delete('k1')
-        self.assertRaises(KeyError, self.db.kv_fetch, 'k1')
+    def test_dict_api(self):
+        self.db['k1'] = 'v1'
+        self.db['k2'] = 'v2'
+        self.assertEqual(self.db['k1'], 'v1')
+        self.assertEqual(self.db['k2'], 'v2')
+        self.assertRaises(KeyError, lambda: self.db['k3'])
 
-    def test_exists(self):
-        self.set_k1_k2()
-        self.db['k2'] = ''
-        self.assertTrue(self.db.kv_exists('k1'))
-        self.assertTrue(self.db.kv_exists('k2'))
-        self.assertFalse(self.db.kv_exists('k3'))
+        self.db.update({'k3': 'v3', 'k2': ''})
+        self.assertEqual(self.db['k3'], 'v3')
+        self.assertEqual(self.db['k2'], '')
 
-        self.db.kv_delete('k1')
-        self.assertFalse(self.db.kv_exists('k1'))
+        self.assertTrue('k1' in self.db)
+        self.assertTrue('k3' in self.db)
+        self.assertFalse('k4' in self.db)
+
+        del self.db['k3']
+        self.assertFalse('k3' in self.db)
+        self.assertRaises(KeyError, lambda: self.db['k3'])
 
 
 class TestBasicCommands(BaseVedisTestCase):
     def test_get_set(self):
-        self.set_k1_k2()
+        # XXX: These actually use the key/value API for performance.
+        self.db.set('k1', 'v1')
+        self.db.set('k2', 'v2')
         self.assertEqual(self.db.get('k1'), 'v1')
-        self.assertEqual(self.db['k2'], 'v2')
-        self.assertEqual(self.db['k3'], None)
-
-    def test_kv_api(self):
-        self.set_k1_k2()
-        res = self.db.append('k1', 'V1')
-        self.assertEqual(res, 4)
-        self.assertEqual(self.db['k1'], 'v1V1')
-
-        res = self.db.append('k3', 'v3')
-        self.assertEqual(res, 2)
-        self.assertEqual(self.db['k3'], 'v3')
-
-    def test_delete(self):
-        self.set_k1_k2()
-
-        self.assertEqual(self.db['k1'], 'v1')
-        del self.db['k1']
-        self.assertEqual(self.db['k1'], None)
-
-    def test_exists(self):
-        self.set_k1_k2()
-        self.db['k2'] = ''
-        self.assertTrue(self.db.exists('k1'))
-        self.assertTrue(self.db.exists('k2'))
-        self.assertFalse(self.db.exists('k3'))
-
-        del self.db['k1']
-        self.assertFalse(self.db.exists('k1'))
-
-        self.assertIn('k2', self.db)
-        self.assertNotIn('k1', self.db)
+        self.assertEqual(self.db.get('k2'), 'v2')
+        self.assertRaises(KeyError, lambda: self.db['k3'])
 
     def test_exists_and_object_types(self):
         # For some reason, `EXIST` does not work with object types.
@@ -132,8 +102,8 @@ class TestBasicCommands(BaseVedisTestCase):
 
     def test_mget(self):
         self.set_k1_k2()
-        res = self.db.mget('k1', 'missing', 'k2')
-        self.assertEqual(list(res), ['v1', None, 'v2'])
+        res = self.db.mget(['k1', 'missing', 'k2'])
+        self.assertEqual(res, ['v1', None, 'v2'])
 
     def test_setnx(self):
         self.db['k1'] = 'v1'
@@ -145,21 +115,21 @@ class TestBasicCommands(BaseVedisTestCase):
 
     def test_mset(self):
         self.db['k1'] = 'v1'
-        self.db.mset(k1='v-x', k2='v2', foo='bar')
+        self.db.mset(dict(k1='v-x', k2='v2', foo='bar'))
         self.assertEqual(
-            list(self.db.mget('k1', 'k2', 'foo')),
+            self.db.mget(['k1', 'k2', 'foo']),
             ['v-x', 'v2', 'bar'])
 
-        self.db.mset(**{'k s': 'vs', 'k s2': 'vs2'})
+        self.db.mset({'k s': 'vs', 'k s2': 'vs2'})
         self.assertEqual(
-            list(self.db.mget('k s', 'k s2')),
+            self.db.mget(['k s', 'k s2']),
             ['vs', 'vs2'])
 
     def test_msetnx(self):
         self.db['k1'] = 'v1'
-        self.db.msetnx(k1='v-x', k2='v2', foo='bar')
+        self.db.msetnx(dict(k1='v-x', k2='v2', foo='bar'))
         self.assertEqual(
-            list(self.db.mget('k1', 'k2', 'foo')),
+            self.db.mget(['k1', 'k2', 'foo']),
             ['v1', 'v2', 'bar'])
 
     def test_getset(self):
@@ -200,12 +170,12 @@ class TestBasicCommands(BaseVedisTestCase):
         self.assertEqual(res, 'value "with quotes"')
 
     def test_numbers(self):
-        self.db[1] = 2
-        self.assertEqual(self.db[1], '2')
-        self.db.append(1, '3')
-        self.assertEqual(self.db[1], '23')
-        self.assertTrue(self.db.exists(1))
-        self.assertFalse(self.db.exists(2))
+        self.db['1'] = '2'
+        self.assertEqual(self.db['1'], '2')
+        self.db.append('1', '3')
+        self.assertEqual(self.db['1'], '23')
+        self.assertTrue(self.db.exists('1'))
+        self.assertFalse(self.db.exists('2'))
 
 
 class TestStringCommands(BaseVedisTestCase):
@@ -233,9 +203,15 @@ class TestStringCommands(BaseVedisTestCase):
         self.assertEqual(len(rs), 5)
         self.assertTrue(isinstance(rs, basestring))
 
-    def test_random_number(self):
-        rn = self.db.random_number()
-        self.assertTrue(isinstance(rn, long))
+        rs2 = self.db.randstr(5)
+        self.assertEqual(len(rs2), 5)
+
+    def test_random_int(self):
+        rn = self.db.random_int()
+        self.assertTrue(isinstance(rn, int))
+
+        rn2 = self.db.rand(1, 10)
+        self.assertTrue(isinstance(rn, int))
 
     def test_strip_tags(self):
         data = '<p>This <span>is</span> a test.</p>'
@@ -283,7 +259,7 @@ class TestHashCommands(BaseVedisTestCase):
         self.assertEqual(self.db.hvals('missing'), None)
 
     def test_hash_methods(self):
-        self.db.hmset('hash', k1='v1', k2='v2', k3='v3')
+        self.db.hmset('hash', dict(k1='v1', k2='v2', k3='v3'))
         self.assertEqual(self.db.hgetall('hash'), {
             'k1': 'v1',
             'k2': 'v2',
@@ -295,7 +271,7 @@ class TestHashCommands(BaseVedisTestCase):
         ])
 
         self.assertEqual(
-            list(self.db.hmget('hash', 'k1', 'missing', 'k2')),
+            self.db.hmget('hash', ['k1', 'missing', 'k2']),
             ['v1', None, 'v2'])
 
         self.assertEqual(self.db.hlen('hash'), 3)
@@ -311,9 +287,9 @@ class TestHashCommands(BaseVedisTestCase):
             'k4': 'v-x'})
 
     def test_hash_methods_missing(self):
-        self.assertEqual(self.db.hgetall('missing'), None)
+        self.assertEqual(self.db.hgetall('missing'), {})
         self.assertEqual(self.db.hlen('missing'), 0)
-        self.assertEqual(self.db.hmget('missing', 'x'), None)
+        self.assertEqual(self.db.hmget('missing', ['x']), None)
         self.assertFalse(self.db.hexists('missing', 'x'))
 
     def test_quoting(self):
@@ -321,7 +297,7 @@ class TestHashCommands(BaseVedisTestCase):
             'k "1"': 'v "1"',
             'k "2"': 'v "2"',
         }
-        self.db.hmset('hash', **in_data)
+        self.db.hmset('hash', in_data)
         out_data = self.db.hgetall('hash')
         self.assertEqual(in_data, out_data)
 
@@ -349,20 +325,20 @@ class TestSetCommands(BaseVedisTestCase):
         self.assertEqual(set(self.db.smembers('set')), set(['v1', 'v3']))
 
     def test_multi_add_remove(self):
-        res = self.db.sadd('my_set', 'v1', 'v2', 'v3', 'v4', 'v1', 'v2')
+        res = self.db.smadd('my_set', ['v1', 'v2', 'v3', 'v4', 'v1', 'v2'])
         self.assertEqual(res, 6)
         self.assertEqual(self.db.scard('my_set'), 4)
         self.assertEqual(sorted(list(self.db.smembers('my_set'))),
                          ['v1', 'v2', 'v3', 'v4'])
 
-        res = self.db.srem('my_set', 'v1', 'v3', 'v1', 'v1')
+        res = self.db.smrem('my_set', ['v1', 'v3', 'v1', 'v1'])
         self.assertEqual(res, 2)
         self.assertEqual(sorted(list(self.db.smembers('my_set'))),
                          ['v2', 'v4'])
 
     def test_intersection_difference(self):
-        self.db.sadd('s1', 'v1', 'v2', 'v3')
-        self.db.sadd('s2', 'v2', 'v3', 'v4')
+        self.db.smadd('s1', ['v1', 'v2', 'v3'])
+        self.db.smadd('s2', ['v2', 'v3', 'v4'])
 
         self.assertEqual(
             set(self.db.sinter('s1', 's2')),
@@ -374,7 +350,7 @@ class TestSetCommands(BaseVedisTestCase):
 
 class TestListCommands(BaseVedisTestCase):
     def test_list_methods(self):
-        self.db.lpush('list', 'v1', 'v2', 'v3')
+        self.db.lmpush('list', ['v1', 'v2', 'v3'])
         self.assertEqual(self.db.llen('list'), 3)
         self.assertEqual(self.db.lpop('list'), 'v1')
         self.assertEqual(self.db.lindex('list', 1), 'v2')
@@ -434,9 +410,9 @@ class TestTransaction(BaseVedisTestCase):
         self.assertFalse(self.db.exists('k3'))
 
     def test_base_transaction_methods(self):
-        self.assertTrue(self.db.begin())
+        self.db.begin()
         self.db['k1'] = 'v1'
-        self.assertTrue(self.db.rollback())
+        self.db.rollback()
         self.assertFalse(self.db.exists('k1'))
 
 
@@ -489,9 +465,7 @@ class TestSetObject(BaseVedisTestCase):
         self.assertEqual(s.to_set(), set(['v1', 'v4']))
 
         s2 = self.db.Set('other_set')
-        s2.add('v1')
-        s2.add('v2')
-        s2.add('v3')
+        s2.add('v1', 'v2', 'v3')
 
         self.assertEqual(s - s2, set(['v4']))
         self.assertEqual(s2 - s, set(['v2', 'v3']))
@@ -502,7 +476,7 @@ class TestSetObject(BaseVedisTestCase):
 class TestListObject(BaseVedisTestCase):
     def test_list_object(self):
         l = self.db.List('my_list')
-        l.append('v1', 'v2', 'v3')
+        l.extend(['v1', 'v2', 'v3'])
         l.append('v4')
         self.assertEqual(len(l), 4)
         self.assertEqual(l.pop(), 'v1')
