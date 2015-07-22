@@ -9,9 +9,6 @@
 #    / /
 #    \/
 #
-# "Be as a bird perched on a frail branch that she feels bending beneath her,
-#  still she sings away all the same, knowing she has wings." - Victor Hugo
-#
 # Thanks to buaabyl for pyUnQLite, whose source-code helped me get started on
 # this library.
 from libc.stdlib cimport free, malloc
@@ -202,6 +199,9 @@ cdef extern from "src/vedis.h":
     cdef int VEDIS_CURSOR_MATCH_EXACT = 1
     cdef int VEDIS_CURSOR_MATCH_LE = 2
     cdef int VEDIS_CURSOR_MATCH_GE = 3
+
+
+ctypedef int (*vedis_command)(vedis_context *, int, vedis_value **)
 
 
 cdef class Vedis(object):
@@ -701,6 +701,246 @@ cdef class Vedis(object):
     cpdef List(self, basestring key):
         return List(self, key)
 
+    def register(self, command_name):
+        def decorator(fn):
+            cdef vedis_command command_callback
+
+            py_command_registry[command_name] = fn
+            command_callback = py_command_wrapper
+            self.check_call(vedis_register_command(
+                self.database,
+                <const char *>command_name,
+                command_callback,
+                <void *>command_name))
+
+            def wrapper(*args):
+                direct_params, params = [], []
+                command_string = [command_name]
+                for arg in args:
+                    if isinstance(arg, (list, tuple)):
+                        direct_params.append(self._flatten_list(arg))
+                        command_string.append('%s')
+                    elif isinstance(arg, dict):
+                        direct_params.append(self._flatten(arg))
+                        command_string.append('%s')
+                    else:
+                        params.append(arg)
+                        command_string.append('%%s')
+
+                return self.execute(
+                    ' '.join(command_string) % direct_params,
+                    tuple(params))
+
+            wrapper.wrapped = fn
+
+            return wrapper
+        return decorator
+
+    def delete_command(self, command_name):
+        self.check_call(vedis_delete_command(
+            self.database,
+            <const char *>command_name))
+
+
+cdef dict py_command_registry = {}
+
+
+cdef int py_command_wrapper(vedis_context *context, int nargs, vedis_value **values):
+    cdef int i
+    cdef list converted = []
+    cdef VedisContext context_wrapper = VedisContext()
+    cdef basestring command_name = <basestring>vedis_context_user_data(context)
+
+    context_wrapper.set_context(context)
+
+    for i in range(nargs):
+        converted.append(vedis_value_to_python(values[i]))
+
+    try:
+        ret = py_command_registry[command_name](context_wrapper, *converted)
+    except:
+        return VEDIS_ABORT
+    else:
+        push_result(context, ret)
+        return VEDIS_OK
+
+
+cdef class VedisContext(object):
+    cdef vedis_context *context
+
+    def __cinit__(self):
+        self.context = NULL
+
+    cdef set_context(self, vedis_context *context):
+        self.context = context
+
+    cdef vedis_value * create_value(self, value):
+        return python_to_vedis_value(self.context, value)
+
+    cdef release_value(self, vedis_value *ptr):
+        vedis_context_release_value(self.context, ptr)
+
+    cpdef store(self, basestring key, basestring value):
+        """Store key/value."""
+        vedis_context_kv_store(
+            self.context,
+            <const char *>key,
+            -1,
+            <const char *>value,
+            len(value))
+
+    cpdef fetch(self, basestring key):
+        """Retrieve value at given key. Raises `KeyError` if key not found."""
+        cdef char *buf = <char *>0
+        cdef vedis_int64 buf_size = 0
+
+        vedis_context_kv_fetch(
+            self.context,
+            <char *>key,
+            -1,
+            <void *>0,
+            &buf_size)
+
+        try:
+            buf = <char *>malloc(buf_size)
+            vedis_context_kv_fetch(
+                self.context,
+                <char *>key,
+                -1,
+                <void *>buf,
+                &buf_size)
+
+            return buf[:buf_size]
+        finally:
+            free(buf)
+
+    cpdef delete(self, basestring key):
+        """Delete the value stored at the given key."""
+        vedis_context_kv_delete(
+            self.context,
+            <char *>key,
+            -1)
+
+    cpdef append(self, basestring key, basestring value):
+        """Append to the value stored in the given key."""
+        vedis_context_kv_append(
+            self.context,
+            <const char *>key,
+            -1,
+            <const char *>value,
+            len(value))
+
+    cpdef exists(self, basestring key):
+        cdef char *buf = <char *>0
+        cdef vedis_int64 buf_size = 0
+        cdef int ret
+
+        ret = vedis_context_kv_fetch(
+            self.context,
+            <char *>key,
+            -1,
+            <void *>0,
+            &buf_size)
+        if ret == VEDIS_NOTFOUND:
+            return False
+        elif ret == VEDIS_OK:
+            return True
+
+        raise Exception()
+
+    def __setitem__(self, key, value):
+        self.store(key, value)
+
+    def __getitem__(self, key):
+        return self.fetch(key)
+
+    def __delitem__(self, key):
+        self.delete(key)
+
+    def __contains__(self, key):
+        return self.exists(key)
+
+
+cdef vedis_value_to_python(vedis_value *ptr):
+    cdef int nbytes
+    cdef list accum
+    cdef vedis_value *item = <vedis_value *>0
+
+    if vedis_value_is_string(ptr):
+        return str(vedis_value_to_string(ptr, &nbytes))[:nbytes].replace('\\"', '"')
+    elif vedis_value_is_array(ptr):
+        accum = []
+        while True:
+            item = vedis_array_next_elem(ptr)
+            if not item:
+                break
+            accum.append(vedis_value_to_python(item))
+        return accum
+    elif vedis_value_is_int(ptr):
+        return vedis_value_to_int(ptr)
+    elif vedis_value_is_float(ptr):
+        return vedis_value_to_double(ptr)
+    elif vedis_value_is_bool(ptr):
+        return bool(vedis_value_to_bool(ptr))
+    elif vedis_value_is_null(ptr):
+        return None
+    raise TypeError('Unrecognized type.')
+
+
+cdef vedis_value* python_to_vedis_value(vedis_context *context, python_value):
+    if isinstance(python_value, (list, tuple)):
+        return create_vedis_array(context, python_value)
+    else:
+        return create_vedis_scalar(context, python_value)
+
+
+cdef vedis_value* create_vedis_scalar(vedis_context *context, python_value):
+    cdef vedis_value *ptr = <vedis_value *>0
+    ptr = vedis_context_new_scalar(context)
+    if isinstance(python_value, unicode):
+        vedis_value_string(ptr, python_value.encode('utf-8'), -1)
+    elif isinstance(python_value, basestring):
+        vedis_value_string(ptr, python_value, -1)
+    elif isinstance(python_value, (int, long)):
+        vedis_value_int(ptr, python_value)
+    elif isinstance(python_value, bool):
+        vedis_value_bool(ptr, python_value)
+    elif isinstance(python_value, float):
+        vedis_value_double(ptr, python_value)
+    elif python_value is None:
+        vedis_value_null(ptr)
+    else:
+        raise TypeError('Unsupported type: %s.' % type(python_value))
+    return ptr
+
+
+cdef vedis_value* create_vedis_array(vedis_context *context, list items):
+    cdef vedis_value *ptr
+    cdef vedis_value *list_item = <vedis_value *>0
+    ptr = vedis_context_new_array(context)
+    for item in items:
+        list_item = python_to_vedis_value(context, item)
+        vedis_array_insert(ptr, list_item)
+        vedis_context_release_value(context, list_item)
+    return ptr
+
+
+cdef push_result(vedis_context *context, python_value):
+    if isinstance(python_value, unicode):
+        vedis_result_string(context, python_value.encode('utf-8'), -1)
+    elif isinstance(python_value, basestring):
+        vedis_result_string(context, python_value, -1)
+    elif isinstance(python_value, (list, tuple)):
+        vedis_result_value(context, create_vedis_array(context, python_value))
+    elif isinstance(python_value, (int, long)):
+        vedis_result_int(context, python_value)
+    elif isinstance(python_value, bool):
+        vedis_result_bool(context, python_value)
+    elif isinstance(python_value, float):
+        vedis_result_double(context, python_value)
+    else:
+        vedis_result_null(context)
+
 
 cdef class Transaction(object):
     """Expose transaction as a context manager."""
@@ -848,82 +1088,3 @@ cdef class List(object):
 
     def extend(self, values):
         return self.vedis.lmpush(self.key, values)
-
-
-cdef vedis_value_to_python(vedis_value *ptr):
-    cdef int nbytes
-    cdef list accum
-    cdef vedis_value *item = <vedis_value *>0
-
-    if vedis_value_is_string(ptr):
-        return str(vedis_value_to_string(ptr, &nbytes))[:nbytes].replace('\\"', '"')
-    elif vedis_value_is_array(ptr):
-        accum = []
-        while True:
-            item = vedis_array_next_elem(ptr)
-            if not item:
-                break
-            accum.append(vedis_value_to_python(item))
-        return accum
-    elif vedis_value_is_int(ptr):
-        return vedis_value_to_int(ptr)
-    elif vedis_value_is_float(ptr):
-        return vedis_value_to_double(ptr)
-    elif vedis_value_is_bool(ptr):
-        return bool(vedis_value_to_bool(ptr))
-    elif vedis_value_is_null(ptr):
-        return None
-    raise TypeError('Unrecognized type.')
-
-
-cdef vedis_value* python_to_vedis_value(vedis_context *context, python_value):
-    if isinstance(python_value, (list, tuple)):
-        return create_vedis_array(context, python_value)
-    else:
-        return create_vedis_scalar(context, python_value)
-
-
-cdef vedis_value* create_vedis_scalar(vedis_context *context, python_value):
-    cdef vedis_value *ptr
-    ptr = vedis_context_new_scalar(context)
-    if isinstance(python_value, unicode):
-        vedis_value_string(ptr, python_value.encode('utf-8'), -1)
-    elif isinstance(python_value, basestring):
-        vedis_value_string(ptr, python_value, -1)
-    elif isinstance(python_value, (int, long)):
-        vedis_value_int(ptr, python_value)
-    elif isinstance(python_value, bool):
-        vedis_value_bool(ptr, python_value)
-    elif isinstance(python_value, float):
-        vedis_value_double(ptr, python_value)
-    elif python_value is None:
-        vedis_value_null(ptr)
-    else:
-        raise TypeError('Unsupported type: %s.' % type(python_value))
-
-
-cdef vedis_value* create_vedis_array(vedis_context *context, list items):
-    cdef vedis_value *ptr
-    cdef vedis_value *list_item
-    ptr = vedis_context_new_array(context)
-    for item in items:
-        list_item = python_to_vedis_value(context, item)
-        vedis_array_insert(ptr, list_item)
-    return ptr
-
-
-cdef push_result(vedis_context *context, python_value):
-    if isinstance(python_value, unicode):
-        vedis_result_string(context, python_value.encode('utf-8'), -1)
-    elif isinstance(python_value, basestring):
-        vedis_result_string(context, python_value, -1)
-    elif isinstance(python_value, (list, tuple)):
-        vedis_result_value(context, create_vedis_array(context, python_value))
-    elif isinstance(python_value, (int, long)):
-        vedis_result_int(context, python_value)
-    elif isinstance(python_value, bool):
-        vedis_result_bool(context, python_value)
-    elif isinstance(python_value, float):
-        vedis_result_double(context, python_value)
-    else:
-        vedis_result_null(context)
