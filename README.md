@@ -12,7 +12,7 @@ Vedis features:
 * Transactional (ACID)
 * Single file or in-memory database
 * Key/value store
-* Over 70 commands similar to standard [Redis](http://redis.io) commands.
+* [Over 70 commands](http://vedis.symisc.net/commands.html) similar to standard [Redis](http://redis.io) commands.
 * Thread-safe
 * Terabyte-sized databases
 
