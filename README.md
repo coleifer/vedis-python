@@ -6,16 +6,35 @@ Fast Python bindings for the Vedis embedded NoSQL database. Vedis is a fun, fast
 
 ### Features
 
-Vedis does lots of little things.
+Vedis features:
 
-[vedis homepage](http://vedis.symisc.net/) and [license](http://vedis.symisc.net/licensing.html). If you like Vedis, you might also want to check out [UnQLite](http://unqlite.org/), an embedded key/value database and JSON document store (python bindings: [unqlite-python](http://unqlite-python.readthedocs.org/)).
+* Embedded, zero-conf database
+* Transactional (ACID)
+* Single file or in-memory database
+* Key/value store
+* Over 70 commands similar to standard [Redis](http://redis.io) commands.
+* Thread-safe
+* Terabyte-sized databases
 
-The previous version of `vedis-python` utilized `ctypes` to wrap the Vedis C library. By switching to Cython, operations are an order of magnitude faster.
+Vedis-Python features:
 
-Installation
-------------
+* Compiled library, extremely fast with minimal overhead.
+* Supports key/value operations and transactions using Pythonic APIs.
+* Support for executing Vedis commands.
+* Write custom commands in Python.
 
-You can install vedis using `pip`.
+The previous version (0.2.0) of `vedis-python` utilized `ctypes` to wrap the Vedis C library. By switching to Cython, key/value and Vedis command operations are significantly faster.
+
+Links:
+
+* [vedis-python documentation](http://vedis-python.readthedocs.org/)
+* [Vedis's C API](http://vedis.symisc.net/c_api.html)
+
+If you like Vedis, you might also want to check out [UnQLite](http://unqlite.symisc.net), an embedded key/value database with cursors and a cool JSON document store (python bindings: [unqlite-python](http://unqlite-python.readthedocs.org)).
+
+## Installation
+
+You can install vedis-python using `pip`.
 
     pip install vedis
 
@@ -247,3 +266,7 @@ foo|bar|baz
 >>> print db.TITLE('testing', 'this is a test', 'another')
 ['Testing', 'This Is A Test', 'Another']
 ```
+
+-------------------------------------------
+
+This code is based in part on [buaabyl's pyUnQLite](https://github.com/buaabyl/pyUnQLite/).
