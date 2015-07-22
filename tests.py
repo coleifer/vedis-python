@@ -495,12 +495,16 @@ class TestCustomCommands(BaseVedisTestCase):
             data.extend(params)
             return 'hello'
 
-        res = self.db.execute('XTEST %s %s', ('foo', 'barbaz'), result=True)
+        res = self.db.execute('XTEST %s %s', ('foo', 'barbaz'))
         self.assertEqual(data, ['foo', 'barbaz'])
         self.assertEqual(res, 'hello')
 
-        res = self.db.execute('XTEST %s', ('single param 111',), result=True)
-        self.assertEqual(data, ['foo', 'barbaz', 'single param 111'])
+        res = self.db.execute('XTEST %s', ('single 111',))
+        self.assertEqual(data, ['foo', 'barbaz', 'single 111'])
+        self.assertEqual(res, 'hello')
+
+        res = xtest('nug', 'baze')
+        self.assertEqual(data, ['foo', 'barbaz', 'single 111', 'nug', 'baze'])
         self.assertEqual(res, 'hello')
 
         self.db.delete_command('XTEST')
@@ -515,7 +519,7 @@ class TestCustomCommands(BaseVedisTestCase):
         def cmdb(context, *params):
             return [param.title() for param in params]
 
-        self.assertEqual(self.db.CMDA(), [
+        self.assertEqual(self.db.execute('CMDA'), [
             'aa',
             ['bb',
              ['cc',
@@ -524,8 +528,11 @@ class TestCustomCommands(BaseVedisTestCase):
             'ff',
         ])
         self.assertEqual(
-            self.db.CMDB('this', 'is a test', 'foo'),
+            self.db.execute('CMDB %s %s %s', ('this', 'is a test', 'foo')),
             ['This', 'Is A Test', 'Foo'])
+
+        self.db.delete_command('CMDA')
+        self.db.delete_command('CMDB')
 
     def test_command_context(self):
         @self.db.register('MAGIC_SET')
@@ -534,12 +541,42 @@ class TestCustomCommands(BaseVedisTestCase):
                 context[param] = param.title()
             return len(params)
 
-        res = self.db.MAGIC_SET('foo', 'bar', 'this is a test')
+        res = self.db.execute(
+            'MAGIC_SET %s %s %s',
+            ('foo', 'bar', 'this is a test'))
         self.assertEqual(res, 3)
 
         self.assertEqual(self.db['foo'], 'Foo')
         self.assertEqual(self.db['bar'], 'Bar')
         self.assertEqual(self.db['this is a test'], 'This Is A Test')
+
+        self.db.delete_command('MAGIC_SET')
+
+    def test_return_types(self):
+        @self.db.register('TEST_RET')
+        def test_ret(context, *params):
+            return [
+                ['list'],
+                1337,
+                3.14,
+                True,
+                None,
+                'string',
+                u'unicode',
+            ]
+
+        res = self.db.execute('TEST_RET')
+        self.assertEqual(res, [
+            ['list'],
+            1337,
+            3.14,
+            1,
+            None,
+            'string',
+            'unicode',
+        ])
+
+        self.db.delete_command('TEST_RET')
 
 
 if __name__ == '__main__':
