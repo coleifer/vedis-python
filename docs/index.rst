@@ -6,9 +6,28 @@
 vedis-python
 ============
 
-Python bindings for `Vedis <http://vedis.symisc.net/>`_, a fast, embedded, NoSQL database modeled after `Redis <http://redis.io>`_.
+Fast Python bindings for `Vedis <http://vedis.symisc.net/>`_, an embedded, NoSQL key/value and data-structure store modeled after `Redis <http://redis.io>`_.
 
 The source code for vedis-python is `hosted on GitHub <https://github.com/coleifer/vedis-python>`_.
+
+Vedis features:
+
+* Embedded, zero-conf database
+* Transactional (ACID)
+* Single file or in-memory database
+* Key/value store
+* `Over 70 commands <http://vedis.symisc.net/commands.html>`_ similar to standard `Redis <http://redis.io>`_ commands.
+* Thread-safe
+* Terabyte-sized databases
+
+Vedis-Python features:
+
+* Compiled library, extremely fast with minimal overhead.
+* Supports key/value operations and transactions using Pythonic APIs.
+* Support for executing Vedis commands.
+* Write custom commands in Python.
+
+The previous version (0.2.0) of ``vedis-python`` utilized ``ctypes`` to wrap the Vedis C library. By switching to Cython, key/value and Vedis command operations are significantly faster.
 
 .. note::
   If you encounter any bugs in the library, please `open an issue <https://github.com/coleifer/vedis-python/issues/new>`_, including a description of the bug and any related traceback.

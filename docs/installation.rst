@@ -18,8 +18,11 @@ The project is hosted at https://github.com/coleifer/vedis-python and can be ins
     python setup.py build
     python setup.py install
 
-After installing vedis-python, you can run the unit tests by executing the `vedis.tests` module:
+.. note::
+    ``vedis-python`` depends on Cython to generate the Python extension. By default vedis-python ships with a generated C source file, so it is not strictly necessary to install Cython in order to compile ``vedis-python``, but you may wish to install Cython to ensure the generated source is compatible with your setup.
+
+After installing vedis-python, you can run the unit tests by executing the ``tests`` module:
 
 .. code-block:: console
 
-    python vedis/tests.py
+    python tests.py

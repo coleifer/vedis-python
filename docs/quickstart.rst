@@ -31,13 +31,10 @@ You can set and get multiple items at a time:
 
 .. code-block:: pycon
 
-    >>> db.mset(k1='v1', k2='v2', k3='v3')
+    >>> db.mset(dict(k1='v1', k2='v2', k3='v3'))
     True
 
-    >>> db.mget('k1', 'k2', 'missing key', 'k3')
-    <generator object iter_vedis_array at 0x7f37dd58be10>
-
-    >>> list(db.mget('k1', 'k2', 'missing key', 'k3'))
+    >>> db.mget(['k1', 'k2', 'missing key', 'k3'])
     ['v1', 'v2', None, 'v3']
 
 In addition to storing string keys/values, you can also implement counters:
@@ -55,6 +52,35 @@ In addition to storing string keys/values, you can also implement counters:
 
     >>> db.decr('counter')
     11
+
+Transactions
+------------
+
+Vedis has support for transactions when you are using an on-disk database. You can use the :py:meth:`~Vedis.transaction` context manager or explicitly call :py:meth:`~Vedis.begin`, :py:meth:`~Vedis.commit` and :py:meth:`~Vedis.rollback`.
+
+.. code-block:: pycon
+
+    >>> db = Vedis('/tmp/test.db')
+    >>> with db.transaction():
+    ...     db['k1'] = 'v1'
+    ...     db['k2'] = 'v2'
+    ...
+    >>> db['k1']
+    'v1'
+
+    >>> with db.transaction():
+    ...     db['k1'] = 'modified'
+    ...     db.rollback()  # Undo changes.
+    ...
+    >>> db['k1']  # Value is not modified.
+    'v1'
+
+    >>> db.begin()
+    >>> db['k3'] = 'v3-xx'
+    >>> db.commit()
+    True
+    >>> db['k3']
+    'v3-xx'
 
 Hashes
 ------
@@ -147,7 +173,9 @@ Vedis also supports a list data type.
 .. code-block:: pycon
 
     >>> l = db.List('my list')
-    >>> l.append('v1', 'v2', 'v3', 'v1')
+    >>> l.append('v1')
+    1
+    >>> l.extend(['v2', 'v3', 'v1'])
     4
 
     >>> len(l)
@@ -184,7 +212,7 @@ Vedis has a somewhat quirky collection of other miscellaneous commands. Below is
     >>> db.rand(1, 6)
     4
 
-    >>> list(db.str_split('abcdefghijklmnop', 5))
+    >>> db.str_split('abcdefghijklmnop', 5)
     ['abcde', 'fghij', 'klmno', 'p']
 
     >>> db['data'] = 'abcdefghijklmnop'
