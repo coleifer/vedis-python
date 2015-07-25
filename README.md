@@ -74,13 +74,10 @@ You can set and get multiple items at a time:
 
 ```python
 
->>> db.mset(k1='v1', k2='v2', k3='v3')
+>>> db.mset(dict(k1='v1', k2='v2', k3='v3'))
 True
 
->>> db.mget('k1', 'k2', 'missing key', 'k3')
-<generator object iter_vedis_array at 0x7f37dd58be10>
-
->>> list(db.mget('k1', 'k2', 'missing key', 'k3'))
+>>> db.mget(['k1', 'k2', 'missing key', 'k3'])
 ['v1', 'v2', None, 'v3']
 ```
 
@@ -118,7 +115,7 @@ Vedis supports nested key/value lookups which have the additional benefit of sup
 >>> h.items()
 [('k1', 'v1'), ('k3', 'v3'), ('k2', 'v2')]
 
->>> list(h.keys())
+>>> h.keys()
 ['k1', 'k3', 'k2']
 
 >>> del h['k2']
@@ -155,7 +152,7 @@ Vedis supports a set data-type which stores a unique collection of items.
 >>> s.peek()
 'v3'
 
->>> s.remove('v2')
+>>> del s['v2']
 1
 
 >>> s.add('v4', 'v5')
@@ -188,7 +185,9 @@ Vedis also supports a list data type.
 ```python
 
 >>> l = db.List('my list')
->>> l.append('v1', 'v2', 'v3', 'v1')
+>>> l.append('v1')
+1
+>>> l.extend(['v2', 'v3', 'v4'])
 4
 
 >>> len(l)
@@ -196,9 +195,6 @@ Vedis also supports a list data type.
 
 >>> l[1]
 'v2'
-
->>> db.llen('my_list')
-2
 
 >>> l.pop(), l.pop()
 ('v1', 'v2')
@@ -225,7 +221,7 @@ Vedis has a somewhat quirky collection of other miscellaneous commands. Below is
 >>> db.rand(1, 6)
 4
 
->>> list(db.str_split('abcdefghijklmnop', 5))
+>>> db.str_split('abcdefghijklmnop', 5)
 ['abcde', 'fghij', 'klmno', 'p']
 
 >>> db['data'] = 'abcdefghijklmnop'
@@ -250,21 +246,32 @@ def concat(context, glue, *params):
 
 @db.register('TITLE')
 def title(context, *params):
-    return [param.title() for param in params]
+    # The `context` can be used to access the key/value store.
+    for param in params:
+        context[param] = param.title()
+    return True
 ```
 
 Here is how you might call the custom commands:
 
 ```python
 
->>> print db.execute('CONCAT | foo bar baz', result=True)
+>>> print db.execute('CONCAT | foo bar baz')
 foo|bar|baz
 
->>> print db.execute('TITLE "testing" "this is a test" "another"', result=True)
-['Testing', 'This Is A Test', 'Another']
+>>> db.execute('TITLE "testing" "this is a test" "another"')
+True
+>>> print db['testing']
+Testing
+>>> print db['this is a test']
+This Is A Test
 
->>> print db.TITLE('testing', 'this is a test', 'another')
-['Testing', 'This Is A Test', 'Another']
+>>> title('foo', 'bar')  # Calling the wrapped function will go through Vedis.
+True
+>>> print db['foo']
+Foo
+>>> print db['bar']
+Bar
 ```
 
 -------------------------------------------

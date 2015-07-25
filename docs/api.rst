@@ -4,21 +4,84 @@ API Documentation
 =================
 
 
-.. py:class:: Vedis([database=':mem:'[, open_manually=False]])
+.. py:class:: Vedis([filename=':mem:'[, open_database=True]])
 
     The :py:class:`Vedis` object provides a pythonic interface for interacting
     with `vedis databases <http://vedis.symisc.net/>`_. Vedis is a lightweight,
     embedded NoSQL database modeled after Redis.
 
-    :param str database: The path to the database file.
-    :param bool open_manually: If set to ``True``, the database will not be
-        opened automatically upon instantiation and must be opened by a call
-        to :py:meth:`~Vedis.open`.
+    :param str filename: The path to the database file. For in-memory databases, you can either leave this parameter empty or specify the string ``:mem:``.
+    :param bool open_database: When set to ``True``, the database will be opened automatically when the class is instantiated. If set to ``False`` you will need to manually call :py:meth:`~Vedis.open`.
 
     .. note::
-        Vedis supports in-memory databases, which can be created by passing
-        in ``':mem:'`` as the database file. This is the default behavior if
-        no database file is specified.
+        Vedis supports in-memory databases, which can be created by passing in ``':mem:'`` as the database file. This is the default behavior if no database file is specified.
+
+    Example usage:
+
+    .. code-block:: pycon
+
+        >>> db = Vedis()  # Create an in-memory database.
+        >>> db['foo'] = 'bar'  # Use as a key/value store.
+        >>> print db['foo']
+        bar
+
+        >>> db.update({'k0': 'v0', 'k1': 'v1', 'k2': 'v2', 'k3': 'v3'})
+
+        >>> 'k3' in db
+        True
+        >>> 'k4' in db
+        False
+        >>> del db['k3']
+
+        >>> db.append('k2', 'XXXX')
+        >>> db.mget(['k1', 'k2', 'k3'])
+        ['1', '2XXXX', None]
+
+        >>> db.incr('counter_1')
+        1
+        >>> db.incr_by('counter_1', 10)
+        11
+
+        >>> hash_obj = db.Hash('my-hash')
+        >>> hash_obj['k1'] = 'v1'
+        >>> hash_obj.update(k2='v2', k3='v3')
+        2
+        >>> hash_obj.to_dict()
+        {'k1': 'v1', 'k2': 'v2', 'k3': 'v3'}
+        >>> hash_obj.items()
+        [('k1', 'v1'), ('k2', 'v2'), ('k3', 'v3')]
+        >>> [key for key in hash_obj]
+        ['k1', 'k2', 'k3']
+        >>> len(hash_obj)
+        3
+
+        >>> set_obj = db.Set('my-set')
+        >>> set_obj.add('foo', 'bar', 'baz', 'foo')
+        3
+        >>> 'foo' in set_obj
+        True
+        >>> del set_obj['bar']
+        1
+        >>> set_obj.to_set()
+        {'baz', 'foo'}
+        >>> [item for item in set_obj]
+        ['baz', 'foo']
+        >>> len(set_obj)
+        2
+
+        >>> list_obj = db.List('my-list')
+        >>> list_obj.extend(['foo', 'bar', 'baz', 'nug'])
+        4
+        >>> list_obj.append('another')
+        5
+        >>> [item for item in list_obj]
+        ['foo', 'bar', 'baz', 'nug', 'another']
+        >>> list_obj[1]
+        'bar'
+        >>> list_obj.pop()
+        'foo'
+        >>> len(l)
+        4
 
     .. py:method:: open()
 
@@ -28,12 +91,32 @@ API Documentation
 
         Close the database connection.
 
+        .. warning::
+            If you are using a file-based database, by default any uncommitted changes will be committed when the database is closed. If you wish to discard uncommitted changes, you can use :py:meth:`~Vedis.disable_autocommit`.
+
+    .. py:method:: __enter__()
+
+        Use the database as a context manager, opening the connection and closing it at the end of the wrapped block:
+
+        .. code-block:: python
+
+            with Vedis('my_db.vdb') as db:
+                db['foo'] = 'bar'
+
+            # When the context manager exits, the database is closed.
+
+    .. py:method:: disable_autocommit()
+
+        When the database is closed, prevent any uncommitted writes from being saved.
+
+        .. note:: This method only affects file-based databases.
+
     .. py:method:: set(key, value)
 
         Store a value in the given key.
 
         :param str key: Identifier used for storing data.
-        :param any value: A value to store in Vedis.
+        :param str value: A value to store in Vedis.
 
         Example:
 
@@ -51,10 +134,11 @@ API Documentation
 
     .. py:method:: get(key)
 
-        Retrieve the value stored at the given ``key``. If no value exists, ``None`` will be returned.
+        Retrieve the value stored at the given ``key``. If no value exists, a ``KeyError`` will be raised.
 
-        :param str key: Identifier to retrieve
-        :returns: The data stored at the given key or ``None``.
+        :param str key: Identifier to retrieve.
+        :returns: The data stored at the given key.
+        :raises: ``KeyError`` if the given key does not exist.
 
         Example:
 
@@ -70,15 +154,33 @@ API Documentation
 
             value = db['some key']
 
+    .. py:method:: delete(key)
+
+        Remove the key and its associated value from the database.
+
+        :param str key: The key to remove from the database.
+        :raises: ``KeyError`` if the given key does not exist.
+
+        Example:
+
+        .. code-block:: python
+
+            def clear_cache():
+                db.delete('cached-data')
+
+        You can also use the python ``del`` keyword combined with a dictionary lookup:
+
+        .. code-block:: python
+
+            def clear_cache():
+                del db['cached-data']
+
     .. py:method:: append(key, value)
 
-        Append the given ``value`` to the data stored in the ``key``. If no data exists, the operation
-        is equivalent to :py:meth:`~Vedis.set`.
+        Append the given ``value`` to the data stored in the ``key``. If no data exists, the operation is equivalent to :py:meth:`~Vedis.set`.
 
         :param str key: The identifier of the value to append to.
         :param value: The value to append.
-        :returns: The length of the value after the new data is appended.
-        :rtype: int
 
     .. py:method:: exists(key)
 
@@ -107,27 +209,9 @@ API Documentation
                     db['cached-data'] = calculate_expensive_data()
                 return db['cached-data']
 
-    .. py:method:: delete(key)
+    .. py:method:: update(data)
 
-        Remove the key and its associated value from the database.
-
-        :param str key: The key to remove from the database.
-
-        Example:
-
-        .. code-block:: python
-
-            def clear_cache():
-                db.delete('cached-data')
-
-        You can also use the python ``del`` keyword combined with a dictionary lookup:
-
-        .. code-block:: python
-
-            def clear_cache():
-                del db['cached-data']
-
-    .. py:method:: update(**kwargs)
+        :param dict data: Dictionary of data to store in the database.
 
         Set multiple key/value pairs in a single command, similar to Python's ``dict.update()``.
 
@@ -136,54 +220,33 @@ API Documentation
         .. code-block:: python
 
             db = Vedis()
-            db.update(
+            db.update(dict(
                 hostname=socket.gethostname(),
                 user=os.environ['USER'],
                 home_dir=os.environ['HOME'],
-                path=os.environ['PATH'])
+                path=os.environ['PATH']))
 
-    .. py:method:: strlen(key)
-
-        Return the length of the value stored at the given key.
-
-        Example:
-
-        .. code-block:: pycon
-
-            >>> db = Vedis()
-            >>> db['foo'] = 'testing'
-            >>> db.strlen('foo')
-            7
-
-    .. py:method:: copy(src, dest)
-
-        Copy the contents of one key to another, leaving the original intact.
-
-    .. py:method:: move(src, dest)
-
-        Move the contents of one key to another, deleting the original key.
-
-    .. py:method:: mget(*keys)
+    .. py:method:: mget(keys)
 
         Retrieve the values of multiple keys in a single command. In the event a key
         does not exist, ``None`` will be returned for that particular value.
 
-        :param keys: One or more keys to retrieve.
+        :param list keys: A list of one or more keys to retrieve.
         :returns: The values for the given keys.
-        :rtype: ``generator``
 
         Example:
 
         .. code-block:: pycon
 
-            >>> db.update(k1='v1', k2='v2', k3='v3', k4='v4')
-            >>> [val for val in db.mget('k1', 'k3', 'missing', 'k4')]
+            >>> db.update(dict(k1='v1', k2='v2', k3='v3', k4='v4'))
+            >>> db.mget(['k1', 'k3', 'missing', 'k4'])
             ['v1', 'v3', None, 'v4']
 
-    .. py:method:: mset(**kwargs)
+    .. py:method:: mset(data)
 
-        Set multiple key/value pairs in a single command. This is equivalent to
-        the :py:meth:`~Vedis.update` method.
+        :param dict data: Dictionary of data to store in the database.
+
+        Set multiple key/value pairs in a single command. This is equivalent to the :py:meth:`~Vedis.update` method.
 
     .. py:method:: setnx(key, value)
 
@@ -203,7 +266,7 @@ API Documentation
                     print 'Error: username already taken.'
                     return False
 
-    .. py:method:: msetnx(**kwargs)
+    .. py:method:: msetnx(kwargs)
 
         Similar to :py:meth:`~Vedis.update`, except that existing keys will not be overwritten.
 
@@ -213,12 +276,12 @@ API Documentation
 
         .. code-block:: pycon
 
-            >>> db.msetnx(k1='v1', k2='v2')
-            >>> list(db.mget('k1', 'k2'))
+            >>> db.msetnx({'k1': 'v1', 'k2': 'v2'})
+            >>> db.mget(['k1', 'k2'])
             ['v1', 'v2']
 
-            >>> db.msetnx(k1='v1x', k2='v2x', k3='v3x')
-            >>> list(db.mget('k1', 'k2', 'k3'))
+            >>> db.msetnx({'k1': 'v1x', 'k2': 'v2x', 'k3': 'v3x'})
+            >>> db.mget(['k1', 'k2', 'k3'])
             ['v1', 'v2', 'v3x']
 
     .. py:method:: get_set(key, value)
@@ -280,6 +343,64 @@ API Documentation
         Decrement the given ``key`` by the integer ``amt``. This method has the same behavior as
         :py:meth:`~Vedis.decr`.
 
+    .. py:method:: begin()
+
+        Begin a transaction.
+
+    .. py:method:: rollback()
+
+        Roll back the current transaction.
+
+    .. py:method:: commit()
+
+        Commit the current transaction.
+
+    .. py:method:: transaction()
+
+        Create a context manager for performing multiple operations in a transaction.
+
+        .. warning::
+            Transactions occur at the disk-level and have no effect on in-memory databases.
+
+        Example:
+
+        .. code-block:: python
+
+            # Transfer $100 in a transaction.
+            with db.transaction():
+                db['from_acct'] = db['from_account'] - 100
+                db['to_acct'] = db['to_acct'] + 100
+
+            # Make changes and then roll them back.
+            with db.transaction():
+                db['foo'] = 'bar'
+                db.rollback()  # Whoops, do not commit these changes.
+
+    .. py:method:: commit_on_success(fn)
+
+        Function decorator that will cause the wrapped function to have all statements wrapped in a transaction. If the function returns without an exception, the transaction is committed. If an exception occurs in the function, the transaction is rolled back.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> @db.commit_on_success
+            ... def save_value(key, value, exc=False):
+            ...     db[key] = value
+            ...     if exc:
+            ...         raise Exception('uh-oh')
+            ...
+            >>> save_value('k3', 'v3')
+            >>> save_value('k3', 'vx', True)
+            Traceback (most recent call last):
+              File "<stdin>", line 1, in <module>
+              File "unqlite/core.py", line 312, in wrapper
+                return fn()
+              File "<stdin>", line 5, in save_value
+            Exception: uh-oh
+            >>> db['k3']
+            'v3'
+
     .. py:method:: Hash(key)
 
         Create a :py:class:`Hash` object, which provides a dictionary-like
@@ -310,6 +431,23 @@ API Documentation
             >>> db.hget('my_hash', 'k3')
             'v3'
 
+    .. py:method:: hsetnx(hash_key, key, value)
+
+        Set a value for the given key in a Vedis hash only if the key
+        does not already exist. Returns boolean indicating whether the
+        value was successfully set.
+
+        :rtype: bool
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.hsetnx('my_hash', 'kx', 'vx')
+            True
+            >>> db.hsetnx('my_hash', 'kx', 'vx')
+            False
+
     .. py:method:: hget(hash_key, key)
 
         Retrieve the value for the key in the Vedis hash identified by ``hash_key``.
@@ -330,11 +468,14 @@ API Documentation
         Delete a ``key`` from a Vedis hash. If the key does not exist in the
         hash, the operation is a no-op.
 
+        :returns: The number of keys deleted.
+
         Example:
 
         .. code-block:: pycon
 
             >>> db.hdel('my_hash', 'k3')
+            1
             >>> db.hget('my_hash', 'k3') is None
             True
 
@@ -343,13 +484,12 @@ API Documentation
         Get the keys for the Vedis hash identified by ``hash_key``.
 
         :returns: All keys for the Vedis hash.
-        :rtype: generator
 
         Example:
 
         .. code-block:: pycon
 
-            >>> list(db.hkeys('my_hash'))
+            >>> db.hkeys('my_hash')
             ['k2', 'k1']
 
     .. py:method:: hvals(hash_key)
@@ -357,13 +497,12 @@ API Documentation
         Get the values for the Vedis hash identified by ``hash_key``.
 
         :returns: All values for the Vedis hash.
-        :rtype: generator
 
         Example:
 
         .. code-block:: pycon
 
-            >>> list(db.hvals('my_hash'))
+            >>> db.hvals('my_hash')
             ['v2', 'v1']
 
     .. py:method:: hgetall(hash_key)
@@ -372,7 +511,7 @@ API Documentation
         by ``hash_key``.
 
         :returns: A dictionary containing the key/value pairs stored in the
-                  given Vedis hash, or ``None`` if a hash does not exist at the
+                  given Vedis hash, or an empty ``dict`` if a hash does not exist at the
                   given key.
         :rtype: dict
 
@@ -383,15 +522,15 @@ API Documentation
             >>> db.hgetall('my_hash')
             {'k2': 'v2', 'k1': 'v1'}
 
-            >>> db.hgetall('does not exist') is None
-            True
+            >>> db.hgetall('does not exist')
+            {}
 
     .. py:method:: hitems(hash_key)
 
         Get a list to key/value pairs stored in the given Vedis hash.
 
         :returns: A list of key/value pairs stored in the given Vedis hash, or
-                  ``None`` if a hash does not exist at the given key.
+                  an empty list if a hash does not exist at the given key.
         :rtype: list of 2-tuples
 
         Example:
@@ -435,7 +574,7 @@ API Documentation
             >>> db.hexists('does not exist', 'kx')
             False
 
-    .. py:method:: hmset(hash_key, **kwargs)
+    .. py:method:: hmset(hash_key, data)
 
         Set multiple key/value pairs in the given Vedis hash. This method is
         analagous to Python's ``dict.update``.
@@ -444,41 +583,35 @@ API Documentation
 
         .. code-block:: pycon
 
-            >>> db.hmset('my_hash', k1='v1', k2='v2', k3='v3', k4='v4')
+            >>> db.hmset('my_hash', {'k1': 'v1', 'k2': 'v2', 'k3': 'v3', 'k4': 'v4'})
             >>> db.hgetall('my_hash')
             {'k3': 'v3', 'k2': 'v2', 'k1': 'v1', 'k4': 'v4'}
 
-    .. py:method:: hmget(hash_key, *keys)
+    .. py:method:: hmget(hash_key, keys)
 
         Return the values for multiple keys in a Vedis hash. If the key does
         not exist in the given hash, ``None`` will be returned for the missing
         key.
 
-        :rtype: generator
-
         Example:
 
         .. code-block:: pycon
 
-            >>> list(db.hmget('my_hash', 'k1', 'k4', 'missing', 'k2'))
+            >>> db.hmget('my_hash', ['k1', 'k4', 'missing', 'k2'])
             ['v1', 'v4', None, 'v2']
 
-    .. py:method:: hsetnx(hash_key, key, value)
+    .. py:method:: hmdel(hash_key, keys)
 
-        Set a value for the given key in a Vedis hash only if the key
-        does not already exist. Returns boolean indicating whether the
-        value was successfully set.
+        Delete multiple keys from a Vedis hash.
 
-        :rtype: bool
+        :returns: The number of keys actually deleted.
 
         Example:
 
         .. code-block:: pycon
 
-            >>> db.hsetnx('my_hash', 'kx', 'vx')
-            True
-            >>> db.hsetnx('my_hash', 'kx', 'vx')
-            False
+            >>> db.hmdel('my_hash', ['k1', 'k2', 'invalid-key'])
+            2
 
     .. py:method:: Set(key)
 
@@ -499,18 +632,36 @@ API Documentation
             >>> my_set.to_set()
             set(['v1', 'v2', 'v3'])
 
-    .. py:method:: sadd(key, *values)
+    .. py:method:: sadd(key, value)
 
-        Add one or more values to a Vedis set, returning the number of
+        Add a single value to a Vedis set, returning the number of
         items added.
 
         Example:
 
         .. code-block:: pycon
 
-            >>> db.sadd('my_set', 'v1', 'v2', 'v3')
-            >>> list(db.smembers('my_set'))
-            ['v1', 'v2', 'v3']
+            >>> db.sadd('my_set', 'v1')
+            1
+            >>> db.sadd('my_set', 'v2')
+            1
+            >>> db.smembers('my_set')
+            {'v1', 'v2'}
+
+    .. py:method:: smadd(key, values)
+
+        Add one or more values to a Vedis set, returning the number of
+        items added.
+
+        Unlike :py:meth:`~Vedis.sadd`, ``smadd`` accepts a list of values to add to the set.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.smadd('my_set', ['v1', 'v2', 'v3'])
+            >>> db.smembers('my_set')
+            {'v1', 'v2', 'v3'}
 
     .. py:method:: scard(key)
 
@@ -530,7 +681,7 @@ API Documentation
 
         Return a boolean indicating whether the provided value is a member
         of a Vedis set. If a Vedis set does not exist at the given key,
-        ``None`` will be returned.
+        ``False`` will be returned.
 
         Example:
 
@@ -541,7 +692,7 @@ API Documentation
             >>> db.sismember('my_set', 'vx')
             False
             >>> print db.sismember('does not exist', 'xx')
-            None
+            False
 
     .. py:method:: spop(key)
 
@@ -603,26 +754,39 @@ API Documentation
             >>> list(db.smembers('my_set'))
             ['v1', 'v3']
 
-    .. py:method:: smembers(key)
+    .. py:method:: smrem(key, values)
 
-        Return all members of a given set.
+        Remove one or more values from the Vedis set.
 
-        :rtype: generator
+        :returns: The number of items removed.
 
         Example:
 
         .. code-block:: pycon
 
-            >>> vals = [val for val in db.smembers('my_set')]
-            >>> print vals
-            ['v1', 'v3']
+            >>> db.smadd('my_set', ['v1', 'v2', 'v3'])
+            3
+            >>> db.smrem('my_set', ['v1', 'v2', 'xxx'])
+            >>> db.smembers('my_set')
+            {'v3'}
+
+    .. py:method:: smembers(key)
+
+        Return all members of a given set.
+
+        :rtype: set
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.smembers('my_set')
+            {'v1', 'v3'}
 
     .. py:method:: sdiff(k1, k2)
 
         Return the set difference of two Vedis sets identified by ``k1`` and ``k2``.
 
-        :rtype: generator
-
         Example:
 
         .. code-block:: pycon
@@ -631,15 +795,13 @@ API Documentation
             3
             >>> db.sadd('other_set', 'v2', 'v3', 'v4')
             3
-            >>> list(db.sdiff('my_set', 'other_set'))
-            ['v1']
+            >>> db.sdiff('my_set', 'other_set')
+            {'v1'}
 
     .. py:method:: sinter(k1, k2)
 
         Return the intersection of two Vedis sets identified by ``k1`` and ``k2``.
 
-        :rtype: generator
-
         Example:
 
         .. code-block:: pycon
@@ -648,8 +810,8 @@ API Documentation
             3
             >>> db.sadd('other_set', 'v2', 'v3', 'v4')
             3
-            >>> list(db.sinter('my_set', 'other_set'))
-            ['v3', 'v2']
+            >>> db.sinter('my_set', 'other_set')
+            {'v3', 'v2'}
 
     .. py:method:: List(key)
 
@@ -665,13 +827,38 @@ API Documentation
         .. code-block:: pycon
 
             >>> my_list = db.List('my_list')
-            >>> my_list.append('i1', 'i2', 'i3')
+            >>> my_list.append('i1')
+            >>> my_list.extend(['i2', 'i3'])
             >>> my_list[0]
             'i1'
             >>> my_list.pop()
             'i1'
             >>> len(my_list)
             2
+
+    .. py:method:: lpush(key, value)
+
+        Append one value to a Vedis list, returning the number of
+        items added.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.lpush('my_list', 'i1')
+            1
+
+    .. py:method:: lmpush(key, values)
+
+        Append one or more values to a Vedis list, returning the number of
+        items added.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db.lmpush('my_list', ['i2', 'i3', 'i4'])
+            3
 
     .. py:method:: lindex(key, idx)
 
@@ -683,7 +870,7 @@ API Documentation
 
         .. code-block:: pycon
 
-            >>> db.lpush('my_list', 'i1', 'i2', 'i3')
+            >>> db.lmpush('my_list', ['i1', 'i2', 'i3'])
             >>> db.lindex('my_list', 0)
             'i1'
             >>> db.lindex('my_list', -1)
@@ -711,98 +898,16 @@ API Documentation
 
         .. code-block:: pycon
 
-            >>> db.lpush('a list', 'i1', 'i2')
+            >>> db.lmpush('a list', ['i1', 'i2'])
             2
             >>> db.lpop('a list')
             'i1'
 
-    .. py:method:: lpush(key, *values)
-
-        Append one or more values to a Vedis list, returning the number of
-        items added.
-
-        Example:
-
-        .. code-block:: pycon
-
-            >>> db.lpush('my_list', 'i1', 'i2', 'i3')
-            3
-
-    .. py:method:: kv_store(key, value)
-
-        Store a value in the given key using the Key/Value API.
-
-        :param str key: Identifier used for storing data.
-        :param any value: A value to store in Vedis.
-
-        Example:
-
-        .. code-block:: python
-
-            db = Vedis()
-            db.kv_store('some key', 'some value')
-            db.kv_store('another key', 'another value')
-
-    .. py:method:: kv_fetch(key[, bufsize=4096[, determine_buffer_size=False]])
-
-        Retrieve the value stored at the given ``key`` using the Key/Value API. If no value exists, a ``KeyError`` will be raised.
-
-        :param str key: Identifier to retrieve
-        :param int bufsize: Integer representing size of buffer to create for value.
-        :param bool determine_buffer_size: If ``True``, then a :py:meth:`~Vedis.strlen` call will be made to determine the correct size for the buffer.
-        :returns: The data stored at the given key.
-        :raises: ``KeyError`` if the key does not exist.
-
-        Example:
-
-        .. code-block:: python
-
-            db = Vedis()
-            db.kv_store('some key', 'some value')
-            value = db.kv_fetch('some key')
-
-    .. py:method:: kv_append(key, value)
-
-        Append the given ``value`` to the data stored in the ``key`` using the Key/Value API. If no data exists, the operation
-        is equivalent to :py:meth:`~Vedis.kv_store`.
-
-        :param str key: The identifier of the value to append to.
-        :param value: The value to append.
-
-    .. py:method:: kv_exists(key)
-
-        Return whether the given ``key`` exists in the database using the Key/Value API.
-
-        :param str key:
-        :returns: A boolean value indicating whether the given ``key`` exists in the database.
-
-        Example:
-
-        .. code-block:: python
-
-            def get_expensive_data():
-                if not db.kv_exists('cached-data'):
-                    db.kv_store('cached-data', calculate_expensive_data())
-                return db.kv_fetch('cached-data')
-
-    .. py:method:: kv_delete(key)
-
-        Remove the key and its associated value from the database using the Key/Value API.
-
-        :param str key: The key to remove from the database.
-
-        Example:
-
-        .. code-block:: python
-
-            def clear_cache():
-                db.kv_delete('cached-data')
-
-    .. py:method:: register(command_name[, user_data=None])
+    .. py:method:: register(command_name)
 
         Function decorator used to register user-defined Vedis commands.
-        User-defined commands must accept a special ``vedis context`` as their
-        first parameter, followed by any number of parameters. The following
+        User-defined commands must accept a special :py:class:`VedisContext` as their
+        first parameter, followed by any number of parameters specified when the command was invoked. The following
         are valid return types for user-defined commands:
 
         * lists (arbitrarily nested)
@@ -825,14 +930,14 @@ API Documentation
 
         .. code-block:: pycon
 
-            >>> db.execute('TITLE %s %s %s', ['foo', 'this is a test', 'bar'], result=True)
+            >>> db.execute('TITLE %s %s %s', ('foo', 'this is a test', 'bar'))
             ['Foo', 'This Is A Test', 'Bar']
 
-        You can also use the short-hand "magic" method for calling a command:
+        You can also call the wrapped function directly, and the call will be routed through Vedis:
 
         .. code-block:: pycon
 
-            >>> db.TITLE('foo', 'this is a test', 'bar')
+            >>> title('foo', 'this is a test', 'bar')
             ['Foo', 'This Is A Test', 'Bar']
 
         For more information, see the :ref:`custom_commands` section.
@@ -840,6 +945,27 @@ API Documentation
     .. py:method:: delete_command(command_name)
 
         Unregister a custom command.
+
+    .. py:method:: strlen(key)
+
+        Return the length of the value stored at the given key.
+
+        Example:
+
+        .. code-block:: pycon
+
+            >>> db = Vedis()
+            >>> db['foo'] = 'testing'
+            >>> db.strlen('foo')
+            7
+
+    .. py:method:: copy(src, dest)
+
+        Copy the contents of one key to another, leaving the original intact.
+
+    .. py:method:: move(src, dest)
+
+        Move the contents of one key to another, deleting the original key.
 
     .. py:method:: strip_tags(html)
 
@@ -859,13 +985,11 @@ API Documentation
 
         Split the given string, ``s``.
 
-        :returns: A generator that successively yields sub-strings.
-
         Example:
 
         .. code-block:: pycon
 
-            >>> list(db.str_split('abcdefghijklmnop', 5))
+            >>> db.str_split('abcdefghijklmnop', 5)
             ['abcde', 'fghij', 'klmno', 'p']
 
     .. py:method:: size_format(nbytes)
@@ -916,9 +1040,13 @@ API Documentation
             >>> db.base64_decode('aGVsbG8=')
             'hello'
 
-    .. py:method:: rand([lower_bound=None[, upper_bound=None]])
+    .. py:method:: rand(lower_bound, upper_bound)
 
         Return a random integer within the lower and upper bounds (inclusive).
+
+    .. py:method:: randstr(nbytes)
+
+        Return a random string of ``nbytes`` length, made up of the characters a-z.
 
     .. py:method:: time()
 
@@ -928,7 +1056,7 @@ API Documentation
 
         Return the current date in ISO-8601 format (YYYY-MM-DD).
 
-    .. py:method:: os()
+    .. py:method:: operating_system()
 
         Return a brief description of the host operating system.
 
@@ -936,19 +1064,13 @@ API Documentation
 
         Return a list of all vedis tables (i.e. Hashes, Sets, List) in memory.
 
-    .. py:method:: vedis_info()
+    .. py:method:: execute(cmd[, params=None[, result=True]])
 
-        Return detailed information about the Vedis library version.
-
-    .. py:method:: execute(cmd[, params=None[, nlen=-1[, result=False[, iter_result=False]]]])
-
-        Execute a Vedis command, optionally returning the result of the command.
+        Execute a Vedis command.
 
         :param str cmd: The command to execute.
-        :param list params: A list of parameters to pass into the command.
-        :param int nlen: The number of parameters. By default this value is ``-1``, which means the count will be determined automatically.
+        :param tuple params: A tuple of parameters to pass into the command.
         :param bool result: Return the result of this command.
-        :param bool iter_result: Return an iterator that will yield the results of this command.
 
         Example:
 
@@ -957,24 +1079,16 @@ API Documentation
             db = Vedis()
 
             # Execute a command, ignoring the result.
-            db.execute('HSET %s %s %s', ['hash_key', 'key', 'some value'])
+            db.execute('HSET %s %s %s', ('hash_key', 'key', 'some value'))
 
             # Execute a command that returns a single result.
-            val = db.execute('HGET %s %s', ['hash_key', 'key'], result=True)
+            val = db.execute('HGET %s %s', ('hash_key', 'key'))
 
             # Execute a command return returns multiple values.
-            gen = db.execute('HKEYS %s', ['hash_key'], iter_result=True)
-            for key in gen:
+            keys = db.execute('HKEYS %s', ('hash_key',))
+            for key in keys:
                 print 'Hash "hash_key" contains key "%s"' % key
 
-    .. py:method:: get_result()
-
-        Return the result of the last-executed Vedis command.
-
-    .. py:method:: iter_result()
-
-        Return a generator that will successively yield values from the last-executed
-        Vedis command.
 
 Hash objects
 ------------
@@ -1008,9 +1122,9 @@ Hash objects
         >>> h.to_dict()
         {'k3': 'v3', 'k2': 'v2', 'k1': 'v1'}
 
-        >>> list(h.keys())
+        >>> h.keys()
         ['k1', 'k3', 'k2']
-        >>> list(h.values())
+        >>> h.values()
         ['v1', 'v3', 'v2']
         >>> h.items()
         [('k1', 'v1'), ('k3', 'v3'), ('k2', 'v2')]
@@ -1019,7 +1133,7 @@ Hash objects
         >>> h.items()
         [('k1', 'v1'), ('k3', 'v3')]
 
-        >>> list(h.mget('k3', 'kx', 'k1'))
+        >>> h.mget('k3', 'kx', 'k1')
         ['v3', None, 'v1']
 
         >>> h
@@ -1065,10 +1179,9 @@ Set objects
 
         >>> s.add('v3', 'v4')
         2
-        >>> s.remove('v4')
-        1
+        >>> del s['v4']
         >>> s.to_set()
-        set(['v1', 'v2', 'v3'])
+        {'v1', 'v2', 'v3'}
 
     Vedis also supports set difference and intersection:
 
@@ -1079,13 +1192,13 @@ Set objects
         3
 
         >>> s - s2
-        set(['v1', 'v2'])
+        {'v1', 'v2'}
 
         >>> s2 - s
-        set(['v4', 'v5'])
+        {'v4', 'v5'}
 
         >>> s & s2
-        set(['v3'])
+        {'v3'}
 
 List objects
 ------------
@@ -1104,9 +1217,9 @@ List objects
 
         >>> l = db.List('my_list')
 
-        >>> l.append('v1', 'v2', 'v3')
-        3
-        >>> l.append('v4')
+        >>> l.append('v1')
+        1
+        >>> l.extend(['v2', 'v3', 'v4'])
         4
 
         >>> len(l)
@@ -1116,6 +1229,9 @@ List objects
         'v1'
         >>> l[-1]
         'v4'
+
+        >>> [item for item in l]
+        ['v1', 'v2', 'v3', 'v4']
 
         >>> l.pop()
         'v1'
@@ -1157,19 +1273,18 @@ vedis-python wraps the ``vedis_context``, providing a nicer API to work with.
 
     .. code-block:: pycon
 
-        >>> db.TITLE_VALUES('val 1', 'another value')
+        >>> db.execute('TITLE_VALUES %s %s', ('val 1', 'another value'))
         2
         >>> db['val 1']
         'Val 1'
         >>> db['another val']
         'Another Val'
 
-    .. py:method:: kv_fetch(key[, bufsize=4096])
+    .. py:method:: fetch(key)
 
-        Return the value of the given key. Identical to :py:meth:`Vedis.kv_fetch` with the exception that the
-        buffer size must be explicitly set and cannot be determined at run-time.
+        Return the value of the given key. Identical to :py:meth:`Vedis.get`.
 
-        Instead of calling ``kv_fetch()`` you can also use a dictionary-style
+        Instead of calling ``fetch()`` you can also use a dictionary-style
         lookup on the context:
 
         .. code-block:: python
@@ -1179,11 +1294,11 @@ vedis-python wraps the ``vedis_context``, providing a nicer API to work with.
                 some_val = context['the key']
                 # ...
 
-    .. py:method:: kv_store(key, value)
+    .. py:method:: store(key, value)
 
-        Set the value of the given key. Identical to :py:meth:`Vedis.kv_store`.
+        Set the value of the given key. Identical to :py:meth:`Vedis.set`.
 
-        Instead of calling ``kv_store()`` you can also use a dictionary-style
+        Instead of calling ``store()`` you can also use a dictionary-style
         assignment on the context:
 
         .. code-block:: python
@@ -1193,17 +1308,17 @@ vedis-python wraps the ``vedis_context``, providing a nicer API to work with.
                 context['some key'] = 'some value'
                 # ...
 
-    .. py:method:: kv_append(key, value)
+    .. py:method:: append(key, value)
 
         Append a value to the given key. If the key does not exist, the
-        operation is equivalent to :py:meth:`~VedisContext.kv_store`. Identical
-        to :py:meth:`Vedis.kv_append`.
+        operation is equivalent to :py:meth:`~VedisContext.store`. Identical
+        to :py:meth:`Vedis.append`.
 
-    .. py:method:: kv_delete(key)
+    .. py:method:: delete(key)
 
-        Delete the given key. Identical to :py:meth:`Vedis.kv_append`.
+        Delete the given key. Identical to :py:meth:`Vedis.delete`.
 
-        Instead of calling ``kv_delete()`` you can also use a the python
+        Instead of calling ``delete()`` you can also use a the python
         ``del`` keyword:
 
         .. code-block:: python
@@ -1212,3 +1327,44 @@ vedis-python wraps the ``vedis_context``, providing a nicer API to work with.
             def my_command(context, *values):
                 del context['some key']
                 # ...
+
+    .. py:method:: exists(key)
+
+        Check for the existence of the given key. Identical to :py:meth:`Vedis.exists`.
+
+        Instead of calling ``exists()`` you can also use a the python
+        ``in`` keyword:
+
+        .. code-block:: python
+
+            @db.register('MY_COMMAND')
+            def my_command(context, *values):
+                if 'some key' in context:
+                    # ...
+
+Transactions
+------------
+
+.. py:class:: Transaction(vedis)
+
+    :param Vedis vedis: An :py:class:`Vedis` instance.
+
+    Context-manager for executing wrapped blocks in a transaction. Rather than instantiating this object directly, it is recommended that you use :py:meth:`Vedis.transaction`.
+
+    Example:
+
+    .. code-block:: python
+
+        with db.transaction():
+            db['from_acct'] = db['from_acct'] + 100
+            db['to_acct'] = db['to_acct'] - 100
+
+    To roll back changes inside a transaction, call :py:meth:`Vedis.rollback`:
+
+    .. code-block:: python
+
+        with db.transaction():
+            db['from_acct'] = db['from_acct'] + 100
+            db['to_acct'] = db['to_acct'] - 100
+            if int(db['to_acct']) < 0:
+                db.rollback()  # Not enough funds!
