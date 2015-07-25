@@ -461,7 +461,7 @@ class TestSetObject(BaseVedisTestCase):
 
         s.add('v3')
         s.add('v4')
-        s.remove('v3')
+        del s['v3']
         self.assertEqual(s.to_set(), set(['v1', 'v4']))
 
         s2 = self.db.Set('other_set')
@@ -478,6 +478,8 @@ class TestListObject(BaseVedisTestCase):
         l = self.db.List('my_list')
         l.extend(['v1', 'v2', 'v3'])
         l.append('v4')
+        items = [item for item in l]
+        self.assertEqual(items, ['v1', 'v2', 'v3', 'v4'])
         self.assertEqual(len(l), 4)
         self.assertEqual(l.pop(), 'v1')
         self.assertEqual(l[0], None)  # This is kind of odd, perhaps a bug?
