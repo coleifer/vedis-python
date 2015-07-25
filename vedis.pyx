@@ -1053,6 +1053,9 @@ cdef class Set(object):
     def remove(self, *values):
         return self.vedis.smrem(self.key, list(values))
 
+    def __delitem__(self, key):
+        self.remove(key)
+
     def __iter__(self):
         return iter(self.vedis.smembers(self.key))
 
@@ -1088,3 +1091,10 @@ cdef class List(object):
 
     def extend(self, values):
         return self.vedis.lmpush(self.key, values)
+
+    def __iter__(self):
+        def gen():
+            l = len(self)
+            for i in range(l):
+                yield self[i]
+        return iter(gen())
