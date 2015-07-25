@@ -455,6 +455,8 @@ struct __pyx_obj_5vedis___pyx_scope_struct_2_genexpr;
 struct __pyx_obj_5vedis___pyx_scope_struct_3__flatten;
 struct __pyx_obj_5vedis___pyx_scope_struct_4_genexpr;
 struct __pyx_obj_5vedis___pyx_scope_struct_5_register;
+struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__;
+struct __pyx_obj_5vedis___pyx_scope_struct_7_gen;
 struct __pyx_opt_args_5vedis_5Vedis_execute;
 struct __pyx_opt_args_5vedis_5Vedis_str_split;
 
@@ -565,7 +567,7 @@ struct __pyx_obj_5vedis_Set {
 };
 
 
-/* "vedis.pyx":1069
+/* "vedis.pyx":1072
  * 
  * 
  * cdef class List(object):             # <<<<<<<<<<<<<<
@@ -666,6 +668,36 @@ struct __pyx_obj_5vedis___pyx_scope_struct_5_register {
   PyObject_HEAD
   PyObject *__pyx_v_command_name;
   struct __pyx_obj_5vedis_Vedis *__pyx_v_self;
+};
+
+
+/* "vedis.pyx":1095
+ *         return self.vedis.lmpush(self.key, values)
+ * 
+ *     def __iter__(self):             # <<<<<<<<<<<<<<
+ *         def gen():
+ *             l = len(self)
+ */
+struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ {
+  PyObject_HEAD
+  struct __pyx_obj_5vedis_List *__pyx_v_self;
+};
+
+
+/* "vedis.pyx":1096
+ * 
+ *     def __iter__(self):
+ *         def gen():             # <<<<<<<<<<<<<<
+ *             l = len(self)
+ *             for i in range(l):
+ */
+struct __pyx_obj_5vedis___pyx_scope_struct_7_gen {
+  PyObject_HEAD
+  struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ *__pyx_outer_scope;
+  Py_ssize_t __pyx_v_i;
+  Py_ssize_t __pyx_v_l;
+  Py_ssize_t __pyx_t_0;
+  Py_ssize_t __pyx_t_1;
 };
 
 
@@ -1114,6 +1146,27 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_GetSlice(
 
 static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type);
 
+#define __Pyx_GetItemInt(o, i, type, is_signed, to_py_func, is_list, wraparound, boundscheck) \
+    (__Pyx_fits_Py_ssize_t(i, type, is_signed) ? \
+    __Pyx_GetItemInt_Fast(o, (Py_ssize_t)i, is_list, wraparound, boundscheck) : \
+    (is_list ? (PyErr_SetString(PyExc_IndexError, "list index out of range"), (PyObject*)NULL) : \
+               __Pyx_GetItemInt_Generic(o, to_py_func(i))))
+#define __Pyx_GetItemInt_List(o, i, type, is_signed, to_py_func, is_list, wraparound, boundscheck) \
+    (__Pyx_fits_Py_ssize_t(i, type, is_signed) ? \
+    __Pyx_GetItemInt_List_Fast(o, (Py_ssize_t)i, wraparound, boundscheck) : \
+    (PyErr_SetString(PyExc_IndexError, "list index out of range"), (PyObject*)NULL))
+static CYTHON_INLINE PyObject *__Pyx_GetItemInt_List_Fast(PyObject *o, Py_ssize_t i,
+                                                              int wraparound, int boundscheck);
+#define __Pyx_GetItemInt_Tuple(o, i, type, is_signed, to_py_func, is_list, wraparound, boundscheck) \
+    (__Pyx_fits_Py_ssize_t(i, type, is_signed) ? \
+    __Pyx_GetItemInt_Tuple_Fast(o, (Py_ssize_t)i, wraparound, boundscheck) : \
+    (PyErr_SetString(PyExc_IndexError, "tuple index out of range"), (PyObject*)NULL))
+static CYTHON_INLINE PyObject *__Pyx_GetItemInt_Tuple_Fast(PyObject *o, Py_ssize_t i,
+                                                              int wraparound, int boundscheck);
+static CYTHON_INLINE PyObject *__Pyx_GetItemInt_Generic(PyObject *o, PyObject* j);
+static CYTHON_INLINE PyObject *__Pyx_GetItemInt_Fast(PyObject *o, Py_ssize_t i,
+                                                     int is_list, int wraparound, int boundscheck);
+
 #include <string.h>
 
 static int __Pyx_SetVtable(PyObject *dict, void *vtable);
@@ -1288,6 +1341,8 @@ static PyTypeObject *__pyx_ptype_5vedis___pyx_scope_struct_2_genexpr = 0;
 static PyTypeObject *__pyx_ptype_5vedis___pyx_scope_struct_3__flatten = 0;
 static PyTypeObject *__pyx_ptype_5vedis___pyx_scope_struct_4_genexpr = 0;
 static PyTypeObject *__pyx_ptype_5vedis___pyx_scope_struct_5_register = 0;
+static PyTypeObject *__pyx_ptype_5vedis___pyx_scope_struct_6___iter__ = 0;
+static PyTypeObject *__pyx_ptype_5vedis___pyx_scope_struct_7_gen = 0;
 static PyObject *__pyx_v_5vedis_py_command_registry = 0;
 static int __pyx_f_5vedis_py_command_wrapper(vedis_context *, int, vedis_value **); /*proto*/
 static PyObject *__pyx_f_5vedis_vedis_value_to_python(vedis_value *); /*proto*/
@@ -1446,10 +1501,11 @@ static PyObject *__pyx_pf_5vedis_3Set_8pop(struct __pyx_obj_5vedis_Set *__pyx_v_
 static PyObject *__pyx_pf_5vedis_3Set_10peek(struct __pyx_obj_5vedis_Set *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_5vedis_3Set_12top(struct __pyx_obj_5vedis_Set *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_5vedis_3Set_14remove(struct __pyx_obj_5vedis_Set *__pyx_v_self, PyObject *__pyx_v_values); /* proto */
-static PyObject *__pyx_pf_5vedis_3Set_16__iter__(struct __pyx_obj_5vedis_Set *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_5vedis_3Set_18to_set(struct __pyx_obj_5vedis_Set *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_5vedis_3Set_20__sub__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs); /* proto */
-static PyObject *__pyx_pf_5vedis_3Set_22__and__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs); /* proto */
+static int __pyx_pf_5vedis_3Set_16__delitem__(struct __pyx_obj_5vedis_Set *__pyx_v_self, PyObject *__pyx_v_key); /* proto */
+static PyObject *__pyx_pf_5vedis_3Set_18__iter__(struct __pyx_obj_5vedis_Set *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5vedis_3Set_20to_set(struct __pyx_obj_5vedis_Set *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5vedis_3Set_22__sub__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs); /* proto */
+static PyObject *__pyx_pf_5vedis_3Set_24__and__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs); /* proto */
 static PyObject *__pyx_pf_5vedis_3Set_5vedis___get__(struct __pyx_obj_5vedis_Set *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_5vedis_3Set_3key___get__(struct __pyx_obj_5vedis_Set *__pyx_v_self); /* proto */
 static int __pyx_pf_5vedis_4List___init__(struct __pyx_obj_5vedis_List *__pyx_v_self, struct __pyx_obj_5vedis_Vedis *__pyx_v_vedis, PyObject *__pyx_v_key); /* proto */
@@ -1458,6 +1514,8 @@ static Py_ssize_t __pyx_pf_5vedis_4List_4__len__(struct __pyx_obj_5vedis_List *_
 static PyObject *__pyx_pf_5vedis_4List_6pop(struct __pyx_obj_5vedis_List *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_5vedis_4List_8append(struct __pyx_obj_5vedis_List *__pyx_v_self, PyObject *__pyx_v_value); /* proto */
 static PyObject *__pyx_pf_5vedis_4List_10extend(struct __pyx_obj_5vedis_List *__pyx_v_self, PyObject *__pyx_v_values); /* proto */
+static PyObject *__pyx_pf_5vedis_4List_8__iter___gen(PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_5vedis_4List_12__iter__(struct __pyx_obj_5vedis_List *__pyx_v_self); /* proto */
 static PyObject *__pyx_tp_new_5vedis_Vedis(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_5vedis_VedisContext(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_5vedis_Transaction(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
@@ -1470,6 +1528,10 @@ static PyObject *__pyx_tp_new_5vedis___pyx_scope_struct_2_genexpr(PyTypeObject *
 static PyObject *__pyx_tp_new_5vedis___pyx_scope_struct_3__flatten(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_5vedis___pyx_scope_struct_4_genexpr(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_5vedis___pyx_scope_struct_5_register(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_5vedis___pyx_scope_struct_6___iter__(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_5vedis___pyx_scope_struct_7_gen(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static char __pyx_k_i[] = "i";
+static char __pyx_k_l[] = "l";
 static char __pyx_k_s[] = "s";
 static char __pyx_k_OS[] = "OS";
 static char __pyx_k_fn[] = "fn";
@@ -1481,6 +1543,7 @@ static char __pyx_k__11[] = "\"";
 static char __pyx_k__12[] = "\\\"";
 static char __pyx_k_arg[] = "arg";
 static char __pyx_k_cmd[] = "cmd";
+static char __pyx_k_gen[] = "gen";
 static char __pyx_k_get[] = "get";
 static char __pyx_k_key[] = "key";
 static char __pyx_k_mem[] = ":mem:";
@@ -1576,6 +1639,7 @@ static char __pyx_k_lpushx[] = "lpushx";
 static char __pyx_k_msetnx[] = "msetnx";
 static char __pyx_k_nchars[] = "nchars";
 static char __pyx_k_params[] = "params";
+static char __pyx_k_remove[] = "remove";
 static char __pyx_k_result[] = "result";
 static char __pyx_k_sinter[] = "sinter";
 static char __pyx_k_strlen[] = "strlen";
@@ -1668,6 +1732,7 @@ static char __pyx_k_command_string[] = "command_string";
 static char __pyx_k_command_callback[] = "command_callback";
 static char __pyx_k_operating_system[] = "operating_system";
 static char __pyx_k_Unrecognized_type[] = "Unrecognized type.";
+static char __pyx_k_iter___locals_gen[] = "__iter__.<locals>.gen";
 static char __pyx_k_Unsupported_type_s[] = "Unsupported type: %s.";
 static char __pyx_k_disable_autocommit[] = "disable_autocommit";
 static char __pyx_k_NotImplementedError[] = "NotImplementedError";
@@ -1786,6 +1851,7 @@ static PyObject *__pyx_n_s_exit;
 static PyObject *__pyx_n_s_fetch;
 static PyObject *__pyx_n_s_filename;
 static PyObject *__pyx_n_s_fn;
+static PyObject *__pyx_n_s_gen;
 static PyObject *__pyx_n_s_genexpr;
 static PyObject *__pyx_n_s_get;
 static PyObject *__pyx_n_s_get_result;
@@ -1805,15 +1871,18 @@ static PyObject *__pyx_kp_s_home_charles_Dropbox_code_vedis;
 static PyObject *__pyx_n_s_hset;
 static PyObject *__pyx_n_s_hsetnx;
 static PyObject *__pyx_n_s_hvals;
+static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_incr;
 static PyObject *__pyx_n_s_incr_by;
 static PyObject *__pyx_n_s_index;
+static PyObject *__pyx_n_s_iter___locals_gen;
 static PyObject *__pyx_n_s_join;
 static PyObject *__pyx_n_s_k1;
 static PyObject *__pyx_n_s_k2;
 static PyObject *__pyx_n_s_key;
 static PyObject *__pyx_n_s_keys;
 static PyObject *__pyx_n_s_kwargs;
+static PyObject *__pyx_n_s_l;
 static PyObject *__pyx_n_s_lindex;
 static PyObject *__pyx_n_s_llen;
 static PyObject *__pyx_n_s_lmpush;
@@ -1842,6 +1911,7 @@ static PyObject *__pyx_n_s_randstr;
 static PyObject *__pyx_n_s_range;
 static PyObject *__pyx_n_s_register_locals_decorator;
 static PyObject *__pyx_n_s_register_locals_decorator_locals;
+static PyObject *__pyx_n_s_remove;
 static PyObject *__pyx_n_s_replace;
 static PyObject *__pyx_n_s_result;
 static PyObject *__pyx_n_s_rollback;
@@ -1903,9 +1973,11 @@ static PyObject *__pyx_tuple__18;
 static PyObject *__pyx_tuple__19;
 static PyObject *__pyx_tuple__20;
 static PyObject *__pyx_tuple__21;
+static PyObject *__pyx_tuple__22;
 static PyObject *__pyx_codeobj__5;
 static PyObject *__pyx_codeobj__15;
 static PyObject *__pyx_codeobj__17;
+static PyObject *__pyx_codeobj__23;
 
 /* "vedis.pyx":217
  *     cdef bint open_database
@@ -24635,7 +24707,7 @@ static PyObject *__pyx_pf_5vedis_3Set_14remove(struct __pyx_obj_5vedis_Set *__py
  *     def remove(self, *values):
  *         return self.vedis.smrem(self.key, list(values))             # <<<<<<<<<<<<<<
  * 
- *     def __iter__(self):
+ *     def __delitem__(self, key):
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __pyx_v_self->key;
@@ -24674,25 +24746,117 @@ static PyObject *__pyx_pf_5vedis_3Set_14remove(struct __pyx_obj_5vedis_Set *__py
 /* "vedis.pyx":1056
  *         return self.vedis.smrem(self.key, list(values))
  * 
- *     def __iter__(self):             # <<<<<<<<<<<<<<
- *         return iter(self.vedis.smembers(self.key))
+ *     def __delitem__(self, key):             # <<<<<<<<<<<<<<
+ *         self.remove(key)
  * 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5vedis_3Set_17__iter__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_5vedis_3Set_17__iter__(PyObject *__pyx_v_self) {
-  PyObject *__pyx_r = 0;
+static int __pyx_pw_5vedis_3Set_17__delitem__(PyObject *__pyx_v_self, PyObject *__pyx_v_key); /*proto*/
+static int __pyx_pw_5vedis_3Set_17__delitem__(PyObject *__pyx_v_self, PyObject *__pyx_v_key) {
+  int __pyx_r;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__iter__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_5vedis_3Set_16__iter__(((struct __pyx_obj_5vedis_Set *)__pyx_v_self));
+  __Pyx_RefNannySetupContext("__delitem__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_5vedis_3Set_16__delitem__(((struct __pyx_obj_5vedis_Set *)__pyx_v_self), ((PyObject *)__pyx_v_key));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5vedis_3Set_16__iter__(struct __pyx_obj_5vedis_Set *__pyx_v_self) {
+static int __pyx_pf_5vedis_3Set_16__delitem__(struct __pyx_obj_5vedis_Set *__pyx_v_self, PyObject *__pyx_v_key) {
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("__delitem__", 0);
+
+  /* "vedis.pyx":1057
+ * 
+ *     def __delitem__(self, key):
+ *         self.remove(key)             # <<<<<<<<<<<<<<
+ * 
+ *     def __iter__(self):
+ */
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_remove); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1057; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = NULL;
+  if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_2))) {
+    __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_2);
+    if (likely(__pyx_t_3)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+      __Pyx_INCREF(__pyx_t_3);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_2, function);
+    }
+  }
+  if (!__pyx_t_3) {
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v_key); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1057; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+  } else {
+    __pyx_t_4 = PyTuple_New(1+1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1057; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_4);
+    PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_3); __Pyx_GIVEREF(__pyx_t_3); __pyx_t_3 = NULL;
+    __Pyx_INCREF(__pyx_v_key);
+    PyTuple_SET_ITEM(__pyx_t_4, 0+1, __pyx_v_key);
+    __Pyx_GIVEREF(__pyx_v_key);
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1057; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  }
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "vedis.pyx":1056
+ *         return self.vedis.smrem(self.key, list(values))
+ * 
+ *     def __delitem__(self, key):             # <<<<<<<<<<<<<<
+ *         self.remove(key)
+ * 
+ */
+
+  /* function exit code */
+  __pyx_r = 0;
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_AddTraceback("vedis.Set.__delitem__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = -1;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "vedis.pyx":1059
+ *         self.remove(key)
+ * 
+ *     def __iter__(self):             # <<<<<<<<<<<<<<
+ *         return iter(self.vedis.smembers(self.key))
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5vedis_3Set_19__iter__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_5vedis_3Set_19__iter__(PyObject *__pyx_v_self) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__iter__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_5vedis_3Set_18__iter__(((struct __pyx_obj_5vedis_Set *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5vedis_3Set_18__iter__(struct __pyx_obj_5vedis_Set *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -24702,7 +24866,7 @@ static PyObject *__pyx_pf_5vedis_3Set_16__iter__(struct __pyx_obj_5vedis_Set *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__iter__", 0);
 
-  /* "vedis.pyx":1057
+  /* "vedis.pyx":1060
  * 
  *     def __iter__(self):
  *         return iter(self.vedis.smembers(self.key))             # <<<<<<<<<<<<<<
@@ -24712,18 +24876,18 @@ static PyObject *__pyx_pf_5vedis_3Set_16__iter__(struct __pyx_obj_5vedis_Set *__
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __pyx_v_self->key;
   __Pyx_INCREF(__pyx_t_1);
-  __pyx_t_2 = ((struct __pyx_vtabstruct_5vedis_Vedis *)__pyx_v_self->vedis->__pyx_vtab)->smembers(__pyx_v_self->vedis, ((PyObject*)__pyx_t_1), 0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1057; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = ((struct __pyx_vtabstruct_5vedis_Vedis *)__pyx_v_self->vedis->__pyx_vtab)->smembers(__pyx_v_self->vedis, ((PyObject*)__pyx_t_1), 0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1060; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1057; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1060; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "vedis.pyx":1056
- *         return self.vedis.smrem(self.key, list(values))
+  /* "vedis.pyx":1059
+ *         self.remove(key)
  * 
  *     def __iter__(self):             # <<<<<<<<<<<<<<
  *         return iter(self.vedis.smembers(self.key))
@@ -24742,7 +24906,7 @@ static PyObject *__pyx_pf_5vedis_3Set_16__iter__(struct __pyx_obj_5vedis_Set *__
   return __pyx_r;
 }
 
-/* "vedis.pyx":1059
+/* "vedis.pyx":1062
  *         return iter(self.vedis.smembers(self.key))
  * 
  *     def to_set(self):             # <<<<<<<<<<<<<<
@@ -24751,19 +24915,19 @@ static PyObject *__pyx_pf_5vedis_3Set_16__iter__(struct __pyx_obj_5vedis_Set *__
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5vedis_3Set_19to_set(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_5vedis_3Set_19to_set(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_5vedis_3Set_21to_set(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_5vedis_3Set_21to_set(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("to_set (wrapper)", 0);
-  __pyx_r = __pyx_pf_5vedis_3Set_18to_set(((struct __pyx_obj_5vedis_Set *)__pyx_v_self));
+  __pyx_r = __pyx_pf_5vedis_3Set_20to_set(((struct __pyx_obj_5vedis_Set *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5vedis_3Set_18to_set(struct __pyx_obj_5vedis_Set *__pyx_v_self) {
+static PyObject *__pyx_pf_5vedis_3Set_20to_set(struct __pyx_obj_5vedis_Set *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -24773,7 +24937,7 @@ static PyObject *__pyx_pf_5vedis_3Set_18to_set(struct __pyx_obj_5vedis_Set *__py
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("to_set", 0);
 
-  /* "vedis.pyx":1060
+  /* "vedis.pyx":1063
  * 
  *     def to_set(self):
  *         return self.vedis.smembers(self.key)             # <<<<<<<<<<<<<<
@@ -24783,14 +24947,14 @@ static PyObject *__pyx_pf_5vedis_3Set_18to_set(struct __pyx_obj_5vedis_Set *__py
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __pyx_v_self->key;
   __Pyx_INCREF(__pyx_t_1);
-  __pyx_t_2 = ((struct __pyx_vtabstruct_5vedis_Vedis *)__pyx_v_self->vedis->__pyx_vtab)->smembers(__pyx_v_self->vedis, ((PyObject*)__pyx_t_1), 0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1060; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = ((struct __pyx_vtabstruct_5vedis_Vedis *)__pyx_v_self->vedis->__pyx_vtab)->smembers(__pyx_v_self->vedis, ((PyObject*)__pyx_t_1), 0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1063; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "vedis.pyx":1059
+  /* "vedis.pyx":1062
  *         return iter(self.vedis.smembers(self.key))
  * 
  *     def to_set(self):             # <<<<<<<<<<<<<<
@@ -24810,7 +24974,7 @@ static PyObject *__pyx_pf_5vedis_3Set_18to_set(struct __pyx_obj_5vedis_Set *__py
   return __pyx_r;
 }
 
-/* "vedis.pyx":1062
+/* "vedis.pyx":1065
  *         return self.vedis.smembers(self.key)
  * 
  *     def __sub__(self, rhs):             # <<<<<<<<<<<<<<
@@ -24819,19 +24983,19 @@ static PyObject *__pyx_pf_5vedis_3Set_18to_set(struct __pyx_obj_5vedis_Set *__py
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5vedis_3Set_21__sub__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs); /*proto*/
-static PyObject *__pyx_pw_5vedis_3Set_21__sub__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs) {
+static PyObject *__pyx_pw_5vedis_3Set_23__sub__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs); /*proto*/
+static PyObject *__pyx_pw_5vedis_3Set_23__sub__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__sub__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_5vedis_3Set_20__sub__(((PyObject *)__pyx_v_self), ((PyObject *)__pyx_v_rhs));
+  __pyx_r = __pyx_pf_5vedis_3Set_22__sub__(((PyObject *)__pyx_v_self), ((PyObject *)__pyx_v_rhs));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5vedis_3Set_20__sub__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs) {
+static PyObject *__pyx_pf_5vedis_3Set_22__sub__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -24846,7 +25010,7 @@ static PyObject *__pyx_pf_5vedis_3Set_20__sub__(PyObject *__pyx_v_self, PyObject
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__sub__", 0);
 
-  /* "vedis.pyx":1063
+  /* "vedis.pyx":1066
  * 
  *     def __sub__(self, rhs):
  *         return self.vedis.sdiff(self.key, rhs.key)             # <<<<<<<<<<<<<<
@@ -24854,117 +25018,9 @@ static PyObject *__pyx_pf_5vedis_3Set_20__sub__(PyObject *__pyx_v_self, PyObject
  *     def __and__(self, rhs):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_vedis); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1063; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_sdiff); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1063; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_key); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1063; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_rhs, __pyx_n_s_key); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1063; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = NULL;
-  __pyx_t_6 = 0;
-  if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_3))) {
-    __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_3);
-    if (likely(__pyx_t_5)) {
-      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
-      __Pyx_INCREF(__pyx_t_5);
-      __Pyx_INCREF(function);
-      __Pyx_DECREF_SET(__pyx_t_3, function);
-      __pyx_t_6 = 1;
-    }
-  }
-  __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1063; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_7);
-  if (__pyx_t_5) {
-    PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5); __Pyx_GIVEREF(__pyx_t_5); __pyx_t_5 = NULL;
-  }
-  PyTuple_SET_ITEM(__pyx_t_7, 0+__pyx_t_6, __pyx_t_2);
-  __Pyx_GIVEREF(__pyx_t_2);
-  PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_6, __pyx_t_4);
-  __Pyx_GIVEREF(__pyx_t_4);
-  __pyx_t_2 = 0;
-  __pyx_t_4 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1063; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* "vedis.pyx":1062
- *         return self.vedis.smembers(self.key)
- * 
- *     def __sub__(self, rhs):             # <<<<<<<<<<<<<<
- *         return self.vedis.sdiff(self.key, rhs.key)
- * 
- */
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_AddTraceback("vedis.Set.__sub__", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "vedis.pyx":1065
- *         return self.vedis.sdiff(self.key, rhs.key)
- * 
- *     def __and__(self, rhs):             # <<<<<<<<<<<<<<
- *         return self.vedis.sinter(self.key, rhs.key)
- * 
- */
-
-/* Python wrapper */
-static PyObject *__pyx_pw_5vedis_3Set_23__and__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs); /*proto*/
-static PyObject *__pyx_pw_5vedis_3Set_23__and__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs) {
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__and__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_5vedis_3Set_22__and__(((PyObject *)__pyx_v_self), ((PyObject *)__pyx_v_rhs));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_5vedis_3Set_22__and__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  PyObject *__pyx_t_3 = NULL;
-  PyObject *__pyx_t_4 = NULL;
-  PyObject *__pyx_t_5 = NULL;
-  Py_ssize_t __pyx_t_6;
-  PyObject *__pyx_t_7 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("__and__", 0);
-
-  /* "vedis.pyx":1066
- * 
- *     def __and__(self, rhs):
- *         return self.vedis.sinter(self.key, rhs.key)             # <<<<<<<<<<<<<<
- * 
- * 
- */
-  __Pyx_XDECREF(__pyx_r);
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_vedis); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1066; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_sinter); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1066; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_sdiff); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1066; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_key); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1066; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -25003,6 +25059,114 @@ static PyObject *__pyx_pf_5vedis_3Set_22__and__(PyObject *__pyx_v_self, PyObject
   goto __pyx_L0;
 
   /* "vedis.pyx":1065
+ *         return self.vedis.smembers(self.key)
+ * 
+ *     def __sub__(self, rhs):             # <<<<<<<<<<<<<<
+ *         return self.vedis.sdiff(self.key, rhs.key)
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_7);
+  __Pyx_AddTraceback("vedis.Set.__sub__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "vedis.pyx":1068
+ *         return self.vedis.sdiff(self.key, rhs.key)
+ * 
+ *     def __and__(self, rhs):             # <<<<<<<<<<<<<<
+ *         return self.vedis.sinter(self.key, rhs.key)
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5vedis_3Set_25__and__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs); /*proto*/
+static PyObject *__pyx_pw_5vedis_3Set_25__and__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__and__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_5vedis_3Set_24__and__(((PyObject *)__pyx_v_self), ((PyObject *)__pyx_v_rhs));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5vedis_3Set_24__and__(PyObject *__pyx_v_self, PyObject *__pyx_v_rhs) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  Py_ssize_t __pyx_t_6;
+  PyObject *__pyx_t_7 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("__and__", 0);
+
+  /* "vedis.pyx":1069
+ * 
+ *     def __and__(self, rhs):
+ *         return self.vedis.sinter(self.key, rhs.key)             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_vedis); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1069; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_sinter); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1069; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_key); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1069; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_rhs, __pyx_n_s_key); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1069; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_5 = NULL;
+  __pyx_t_6 = 0;
+  if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_3))) {
+    __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_3);
+    if (likely(__pyx_t_5)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_5);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_3, function);
+      __pyx_t_6 = 1;
+    }
+  }
+  __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1069; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_7);
+  if (__pyx_t_5) {
+    PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5); __Pyx_GIVEREF(__pyx_t_5); __pyx_t_5 = NULL;
+  }
+  PyTuple_SET_ITEM(__pyx_t_7, 0+__pyx_t_6, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_2);
+  PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_6, __pyx_t_4);
+  __Pyx_GIVEREF(__pyx_t_4);
+  __pyx_t_2 = 0;
+  __pyx_t_4 = 0;
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_7, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1069; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "vedis.pyx":1068
  *         return self.vedis.sdiff(self.key, rhs.key)
  * 
  *     def __and__(self, rhs):             # <<<<<<<<<<<<<<
@@ -25100,7 +25264,7 @@ static PyObject *__pyx_pf_5vedis_3Set_3key___get__(struct __pyx_obj_5vedis_Set *
   return __pyx_r;
 }
 
-/* "vedis.pyx":1073
+/* "vedis.pyx":1076
  *     cdef basestring key
  * 
  *     def __init__(self, Vedis vedis, basestring key):             # <<<<<<<<<<<<<<
@@ -25139,11 +25303,11 @@ static int __pyx_pw_5vedis_4List_1__init__(PyObject *__pyx_v_self, PyObject *__p
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_key)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 1, 2, 2, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1073; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 2, 2, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1076; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1073; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1076; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -25156,14 +25320,14 @@ static int __pyx_pw_5vedis_4List_1__init__(PyObject *__pyx_v_self, PyObject *__p
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__init__", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1073; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("__init__", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1076; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("vedis.List.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_vedis), __pyx_ptype_5vedis_Vedis, 1, "vedis", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1073; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_key), (&PyBaseString_Type), 1, "key", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1073; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_vedis), __pyx_ptype_5vedis_Vedis, 1, "vedis", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1076; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_key), (&PyBaseString_Type), 1, "key", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1076; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_5vedis_4List___init__(((struct __pyx_obj_5vedis_List *)__pyx_v_self), __pyx_v_vedis, __pyx_v_key);
 
   /* function exit code */
@@ -25180,7 +25344,7 @@ static int __pyx_pf_5vedis_4List___init__(struct __pyx_obj_5vedis_List *__pyx_v_
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "vedis.pyx":1074
+  /* "vedis.pyx":1077
  * 
  *     def __init__(self, Vedis vedis, basestring key):
  *         self.vedis = vedis             # <<<<<<<<<<<<<<
@@ -25193,7 +25357,7 @@ static int __pyx_pf_5vedis_4List___init__(struct __pyx_obj_5vedis_List *__pyx_v_
   __Pyx_DECREF(((PyObject *)__pyx_v_self->vedis));
   __pyx_v_self->vedis = __pyx_v_vedis;
 
-  /* "vedis.pyx":1075
+  /* "vedis.pyx":1078
  *     def __init__(self, Vedis vedis, basestring key):
  *         self.vedis = vedis
  *         self.key = key             # <<<<<<<<<<<<<<
@@ -25206,7 +25370,7 @@ static int __pyx_pf_5vedis_4List___init__(struct __pyx_obj_5vedis_List *__pyx_v_
   __Pyx_DECREF(__pyx_v_self->key);
   __pyx_v_self->key = __pyx_v_key;
 
-  /* "vedis.pyx":1073
+  /* "vedis.pyx":1076
  *     cdef basestring key
  * 
  *     def __init__(self, Vedis vedis, basestring key):             # <<<<<<<<<<<<<<
@@ -25220,7 +25384,7 @@ static int __pyx_pf_5vedis_4List___init__(struct __pyx_obj_5vedis_List *__pyx_v_
   return __pyx_r;
 }
 
-/* "vedis.pyx":1077
+/* "vedis.pyx":1080
  *         self.key = key
  * 
  *     def __getitem__(self, index):             # <<<<<<<<<<<<<<
@@ -25252,7 +25416,7 @@ static PyObject *__pyx_pf_5vedis_4List_2__getitem__(struct __pyx_obj_5vedis_List
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__getitem__", 0);
 
-  /* "vedis.pyx":1078
+  /* "vedis.pyx":1081
  * 
  *     def __getitem__(self, index):
  *         return self.vedis.lindex(self.key, index)             # <<<<<<<<<<<<<<
@@ -25262,15 +25426,15 @@ static PyObject *__pyx_pf_5vedis_4List_2__getitem__(struct __pyx_obj_5vedis_List
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __pyx_v_self->key;
   __Pyx_INCREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyInt_As_int(__pyx_v_index); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1078; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_3 = ((struct __pyx_vtabstruct_5vedis_Vedis *)__pyx_v_self->vedis->__pyx_vtab)->lindex(__pyx_v_self->vedis, ((PyObject*)__pyx_t_1), __pyx_t_2, 0); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1078; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyInt_As_int(__pyx_v_index); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1081; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = ((struct __pyx_vtabstruct_5vedis_Vedis *)__pyx_v_self->vedis->__pyx_vtab)->lindex(__pyx_v_self->vedis, ((PyObject*)__pyx_t_1), __pyx_t_2, 0); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1081; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "vedis.pyx":1077
+  /* "vedis.pyx":1080
  *         self.key = key
  * 
  *     def __getitem__(self, index):             # <<<<<<<<<<<<<<
@@ -25290,7 +25454,7 @@ static PyObject *__pyx_pf_5vedis_4List_2__getitem__(struct __pyx_obj_5vedis_List
   return __pyx_r;
 }
 
-/* "vedis.pyx":1080
+/* "vedis.pyx":1083
  *         return self.vedis.lindex(self.key, index)
  * 
  *     def __len__(self):             # <<<<<<<<<<<<<<
@@ -25317,7 +25481,7 @@ static Py_ssize_t __pyx_pf_5vedis_4List_4__len__(struct __pyx_obj_5vedis_List *_
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("__len__", 0);
 
-  /* "vedis.pyx":1081
+  /* "vedis.pyx":1084
  * 
  *     def __len__(self):
  *         return self.vedis.llen(self.key)             # <<<<<<<<<<<<<<
@@ -25330,7 +25494,7 @@ static Py_ssize_t __pyx_pf_5vedis_4List_4__len__(struct __pyx_obj_5vedis_List *_
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "vedis.pyx":1080
+  /* "vedis.pyx":1083
  *         return self.vedis.lindex(self.key, index)
  * 
  *     def __len__(self):             # <<<<<<<<<<<<<<
@@ -25344,7 +25508,7 @@ static Py_ssize_t __pyx_pf_5vedis_4List_4__len__(struct __pyx_obj_5vedis_List *_
   return __pyx_r;
 }
 
-/* "vedis.pyx":1083
+/* "vedis.pyx":1086
  *         return self.vedis.llen(self.key)
  * 
  *     def pop(self):             # <<<<<<<<<<<<<<
@@ -25375,7 +25539,7 @@ static PyObject *__pyx_pf_5vedis_4List_6pop(struct __pyx_obj_5vedis_List *__pyx_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("pop", 0);
 
-  /* "vedis.pyx":1084
+  /* "vedis.pyx":1087
  * 
  *     def pop(self):
  *         return self.vedis.lpop(self.key)             # <<<<<<<<<<<<<<
@@ -25385,14 +25549,14 @@ static PyObject *__pyx_pf_5vedis_4List_6pop(struct __pyx_obj_5vedis_List *__pyx_
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __pyx_v_self->key;
   __Pyx_INCREF(__pyx_t_1);
-  __pyx_t_2 = ((struct __pyx_vtabstruct_5vedis_Vedis *)__pyx_v_self->vedis->__pyx_vtab)->lpop(__pyx_v_self->vedis, ((PyObject*)__pyx_t_1), 0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1084; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = ((struct __pyx_vtabstruct_5vedis_Vedis *)__pyx_v_self->vedis->__pyx_vtab)->lpop(__pyx_v_self->vedis, ((PyObject*)__pyx_t_1), 0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1087; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "vedis.pyx":1083
+  /* "vedis.pyx":1086
  *         return self.vedis.llen(self.key)
  * 
  *     def pop(self):             # <<<<<<<<<<<<<<
@@ -25412,7 +25576,7 @@ static PyObject *__pyx_pf_5vedis_4List_6pop(struct __pyx_obj_5vedis_List *__pyx_
   return __pyx_r;
 }
 
-/* "vedis.pyx":1086
+/* "vedis.pyx":1089
  *         return self.vedis.lpop(self.key)
  * 
  *     def append(self, value):             # <<<<<<<<<<<<<<
@@ -25443,7 +25607,7 @@ static PyObject *__pyx_pf_5vedis_4List_8append(struct __pyx_obj_5vedis_List *__p
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("append", 0);
 
-  /* "vedis.pyx":1087
+  /* "vedis.pyx":1090
  * 
  *     def append(self, value):
  *         return self.vedis.lpush(self.key, value)             # <<<<<<<<<<<<<<
@@ -25453,15 +25617,15 @@ static PyObject *__pyx_pf_5vedis_4List_8append(struct __pyx_obj_5vedis_List *__p
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __pyx_v_self->key;
   __Pyx_INCREF(__pyx_t_1);
-  if (!(likely(__Pyx_PyBaseString_CheckExact(__pyx_v_value))||((__pyx_v_value) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", (PY_MAJOR_VERSION < 3 ? "basestring" : "str"), Py_TYPE(__pyx_v_value)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1087; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_2 = __Pyx_PyInt_From_int(((struct __pyx_vtabstruct_5vedis_Vedis *)__pyx_v_self->vedis->__pyx_vtab)->lpush(__pyx_v_self->vedis, ((PyObject*)__pyx_t_1), ((PyObject*)__pyx_v_value), 0)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1087; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (!(likely(__Pyx_PyBaseString_CheckExact(__pyx_v_value))||((__pyx_v_value) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", (PY_MAJOR_VERSION < 3 ? "basestring" : "str"), Py_TYPE(__pyx_v_value)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1090; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyInt_From_int(((struct __pyx_vtabstruct_5vedis_Vedis *)__pyx_v_self->vedis->__pyx_vtab)->lpush(__pyx_v_self->vedis, ((PyObject*)__pyx_t_1), ((PyObject*)__pyx_v_value), 0)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1090; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "vedis.pyx":1086
+  /* "vedis.pyx":1089
  *         return self.vedis.lpop(self.key)
  * 
  *     def append(self, value):             # <<<<<<<<<<<<<<
@@ -25481,11 +25645,12 @@ static PyObject *__pyx_pf_5vedis_4List_8append(struct __pyx_obj_5vedis_List *__p
   return __pyx_r;
 }
 
-/* "vedis.pyx":1089
+/* "vedis.pyx":1092
  *         return self.vedis.lpush(self.key, value)
  * 
  *     def extend(self, values):             # <<<<<<<<<<<<<<
  *         return self.vedis.lmpush(self.key, values)
+ * 
  */
 
 /* Python wrapper */
@@ -25511,27 +25676,30 @@ static PyObject *__pyx_pf_5vedis_4List_10extend(struct __pyx_obj_5vedis_List *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("extend", 0);
 
-  /* "vedis.pyx":1090
+  /* "vedis.pyx":1093
  * 
  *     def extend(self, values):
  *         return self.vedis.lmpush(self.key, values)             # <<<<<<<<<<<<<<
+ * 
+ *     def __iter__(self):
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __pyx_v_self->key;
   __Pyx_INCREF(__pyx_t_1);
-  if (!(likely(PyList_CheckExact(__pyx_v_values))||((__pyx_v_values) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "list", Py_TYPE(__pyx_v_values)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1090; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_2 = __Pyx_PyInt_From_int(((struct __pyx_vtabstruct_5vedis_Vedis *)__pyx_v_self->vedis->__pyx_vtab)->lmpush(__pyx_v_self->vedis, ((PyObject*)__pyx_t_1), ((PyObject*)__pyx_v_values), 0)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1090; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (!(likely(PyList_CheckExact(__pyx_v_values))||((__pyx_v_values) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "list", Py_TYPE(__pyx_v_values)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1093; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyInt_From_int(((struct __pyx_vtabstruct_5vedis_Vedis *)__pyx_v_self->vedis->__pyx_vtab)->lmpush(__pyx_v_self->vedis, ((PyObject*)__pyx_t_1), ((PyObject*)__pyx_v_values), 0)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1093; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "vedis.pyx":1089
+  /* "vedis.pyx":1092
  *         return self.vedis.lpush(self.key, value)
  * 
  *     def extend(self, values):             # <<<<<<<<<<<<<<
  *         return self.vedis.lmpush(self.key, values)
+ * 
  */
 
   /* function exit code */
@@ -25541,6 +25709,255 @@ static PyObject *__pyx_pf_5vedis_4List_10extend(struct __pyx_obj_5vedis_List *__
   __Pyx_AddTraceback("vedis.List.extend", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "vedis.pyx":1095
+ *         return self.vedis.lmpush(self.key, values)
+ * 
+ *     def __iter__(self):             # <<<<<<<<<<<<<<
+ *         def gen():
+ *             l = len(self)
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5vedis_4List_13__iter__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_5vedis_4List_13__iter__(PyObject *__pyx_v_self) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__iter__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_5vedis_4List_12__iter__(((struct __pyx_obj_5vedis_List *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+static PyObject *__pyx_gb_5vedis_4List_8__iter___2generator2(__pyx_GeneratorObject *__pyx_generator, PyObject *__pyx_sent_value); /* proto */
+
+/* "vedis.pyx":1096
+ * 
+ *     def __iter__(self):
+ *         def gen():             # <<<<<<<<<<<<<<
+ *             l = len(self)
+ *             for i in range(l):
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5vedis_4List_8__iter___1gen(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyMethodDef __pyx_mdef_5vedis_4List_8__iter___1gen = {"gen", (PyCFunction)__pyx_pw_5vedis_4List_8__iter___1gen, METH_NOARGS, 0};
+static PyObject *__pyx_pw_5vedis_4List_8__iter___1gen(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("gen (wrapper)", 0);
+  __pyx_r = __pyx_pf_5vedis_4List_8__iter___gen(__pyx_self);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5vedis_4List_8__iter___gen(PyObject *__pyx_self) {
+  struct __pyx_obj_5vedis___pyx_scope_struct_7_gen *__pyx_cur_scope;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("gen", 0);
+  __pyx_cur_scope = (struct __pyx_obj_5vedis___pyx_scope_struct_7_gen *)__pyx_tp_new_5vedis___pyx_scope_struct_7_gen(__pyx_ptype_5vedis___pyx_scope_struct_7_gen, __pyx_empty_tuple, NULL);
+  if (unlikely(!__pyx_cur_scope)) {
+    __Pyx_RefNannyFinishContext();
+    return NULL;
+  }
+  __Pyx_GOTREF(__pyx_cur_scope);
+  __pyx_cur_scope->__pyx_outer_scope = (struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ *) __Pyx_CyFunction_GetClosure(__pyx_self);
+  __Pyx_INCREF(((PyObject *)__pyx_cur_scope->__pyx_outer_scope));
+  __Pyx_GIVEREF(__pyx_cur_scope->__pyx_outer_scope);
+  {
+    __pyx_GeneratorObject *gen = __Pyx_Generator_New((__pyx_generator_body_t) __pyx_gb_5vedis_4List_8__iter___2generator2, (PyObject *) __pyx_cur_scope, __pyx_n_s_gen, __pyx_n_s_iter___locals_gen); if (unlikely(!gen)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1096; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_cur_scope);
+    __Pyx_RefNannyFinishContext();
+    return (PyObject *) gen;
+  }
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_AddTraceback("vedis.List.__iter__.gen", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __Pyx_DECREF(((PyObject *)__pyx_cur_scope));
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_gb_5vedis_4List_8__iter___2generator2(__pyx_GeneratorObject *__pyx_generator, PyObject *__pyx_sent_value) /* generator body */
+{
+  struct __pyx_obj_5vedis___pyx_scope_struct_7_gen *__pyx_cur_scope = ((struct __pyx_obj_5vedis___pyx_scope_struct_7_gen *)__pyx_generator->closure);
+  PyObject *__pyx_r = NULL;
+  PyObject *__pyx_t_1 = NULL;
+  Py_ssize_t __pyx_t_2;
+  Py_ssize_t __pyx_t_3;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("None", 0);
+  switch (__pyx_generator->resume_label) {
+    case 0: goto __pyx_L3_first_run;
+    case 1: goto __pyx_L6_resume_from_yield;
+    default: /* CPython raises the right error here */
+    __Pyx_RefNannyFinishContext();
+    return NULL;
+  }
+  __pyx_L3_first_run:;
+  if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1096; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "vedis.pyx":1097
+ *     def __iter__(self):
+ *         def gen():
+ *             l = len(self)             # <<<<<<<<<<<<<<
+ *             for i in range(l):
+ *                 yield self[i]
+ */
+  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self)) { __Pyx_RaiseClosureNameError("self"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1097; __pyx_clineno = __LINE__; goto __pyx_L1_error;} }
+  __pyx_t_1 = ((PyObject *)__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self);
+  __Pyx_INCREF(__pyx_t_1);
+  __pyx_t_2 = PyObject_Length(__pyx_t_1); if (unlikely(__pyx_t_2 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1097; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_cur_scope->__pyx_v_l = __pyx_t_2;
+
+  /* "vedis.pyx":1098
+ *         def gen():
+ *             l = len(self)
+ *             for i in range(l):             # <<<<<<<<<<<<<<
+ *                 yield self[i]
+ *         return iter(gen())
+ */
+  __pyx_t_2 = __pyx_cur_scope->__pyx_v_l;
+  for (__pyx_t_3 = 0; __pyx_t_3 < __pyx_t_2; __pyx_t_3+=1) {
+    __pyx_cur_scope->__pyx_v_i = __pyx_t_3;
+
+    /* "vedis.pyx":1099
+ *             l = len(self)
+ *             for i in range(l):
+ *                 yield self[i]             # <<<<<<<<<<<<<<
+ *         return iter(gen())
+ */
+    if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self)) { __Pyx_RaiseClosureNameError("self"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1099; __pyx_clineno = __LINE__; goto __pyx_L1_error;} }
+    __pyx_t_1 = __Pyx_GetItemInt(((PyObject *)__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self), __pyx_cur_scope->__pyx_v_i, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1099; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+    __Pyx_GOTREF(__pyx_t_1);
+    __pyx_r = __pyx_t_1;
+    __pyx_t_1 = 0;
+    __pyx_cur_scope->__pyx_t_0 = __pyx_t_2;
+    __pyx_cur_scope->__pyx_t_1 = __pyx_t_3;
+    __Pyx_XGIVEREF(__pyx_r);
+    __Pyx_RefNannyFinishContext();
+    /* return from generator, yielding value */
+    __pyx_generator->resume_label = 1;
+    return __pyx_r;
+    __pyx_L6_resume_from_yield:;
+    __pyx_t_2 = __pyx_cur_scope->__pyx_t_0;
+    __pyx_t_3 = __pyx_cur_scope->__pyx_t_1;
+    if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1099; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  }
+
+  /* "vedis.pyx":1096
+ * 
+ *     def __iter__(self):
+ *         def gen():             # <<<<<<<<<<<<<<
+ *             l = len(self)
+ *             for i in range(l):
+ */
+
+  /* function exit code */
+  PyErr_SetNone(PyExc_StopIteration);
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("gen", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_generator->resume_label = -1;
+  __Pyx_Generator_clear((PyObject*)__pyx_generator);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+}
+
+/* "vedis.pyx":1095
+ *         return self.vedis.lmpush(self.key, values)
+ * 
+ *     def __iter__(self):             # <<<<<<<<<<<<<<
+ *         def gen():
+ *             l = len(self)
+ */
+
+static PyObject *__pyx_pf_5vedis_4List_12__iter__(struct __pyx_obj_5vedis_List *__pyx_v_self) {
+  struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ *__pyx_cur_scope;
+  PyObject *__pyx_v_gen = 0;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("__iter__", 0);
+  __pyx_cur_scope = (struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ *)__pyx_tp_new_5vedis___pyx_scope_struct_6___iter__(__pyx_ptype_5vedis___pyx_scope_struct_6___iter__, __pyx_empty_tuple, NULL);
+  if (unlikely(!__pyx_cur_scope)) {
+    __Pyx_RefNannyFinishContext();
+    return NULL;
+  }
+  __Pyx_GOTREF(__pyx_cur_scope);
+  __pyx_cur_scope->__pyx_v_self = __pyx_v_self;
+  __Pyx_INCREF((PyObject *)__pyx_cur_scope->__pyx_v_self);
+  __Pyx_GIVEREF((PyObject *)__pyx_cur_scope->__pyx_v_self);
+
+  /* "vedis.pyx":1096
+ * 
+ *     def __iter__(self):
+ *         def gen():             # <<<<<<<<<<<<<<
+ *             l = len(self)
+ *             for i in range(l):
+ */
+  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_5vedis_4List_8__iter___1gen, 0, __pyx_n_s_iter___locals_gen, ((PyObject*)__pyx_cur_scope), __pyx_n_s_vedis, __pyx_d, ((PyObject *)__pyx_codeobj__23)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1096; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_v_gen = __pyx_t_1;
+  __pyx_t_1 = 0;
+
+  /* "vedis.pyx":1100
+ *             for i in range(l):
+ *                 yield self[i]
+ *         return iter(gen())             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __pyx_pf_5vedis_4List_8__iter___gen(__pyx_v_gen); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_r = __pyx_t_2;
+  __pyx_t_2 = 0;
+  goto __pyx_L0;
+
+  /* "vedis.pyx":1095
+ *         return self.vedis.lmpush(self.key, values)
+ * 
+ *     def __iter__(self):             # <<<<<<<<<<<<<<
+ *         def gen():
+ *             l = len(self)
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_AddTraceback("vedis.List.__iter__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_gen);
+  __Pyx_DECREF(((PyObject *)__pyx_cur_scope));
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -26217,6 +26634,17 @@ static int __pyx_tp_clear_5vedis_Set(PyObject *o) {
   return 0;
 }
 
+static int __pyx_mp_ass_subscript_5vedis_Set(PyObject *o, PyObject *i, PyObject *v) {
+  if (v) {
+    PyErr_Format(PyExc_NotImplementedError,
+      "Subscript assignment not supported by %.200s", Py_TYPE(o)->tp_name);
+    return -1;
+  }
+  else {
+    return __pyx_pw_5vedis_3Set_17__delitem__(o, i);
+  }
+}
+
 static PyObject *__pyx_getprop_5vedis_3Set_vedis(PyObject *o, CYTHON_UNUSED void *x) {
   return __pyx_pw_5vedis_3Set_5vedis_1__get__(o);
 }
@@ -26231,7 +26659,7 @@ static PyMethodDef __pyx_methods_5vedis_Set[] = {
   {"peek", (PyCFunction)__pyx_pw_5vedis_3Set_11peek, METH_NOARGS, 0},
   {"top", (PyCFunction)__pyx_pw_5vedis_3Set_13top, METH_NOARGS, 0},
   {"remove", (PyCFunction)__pyx_pw_5vedis_3Set_15remove, METH_VARARGS|METH_KEYWORDS, 0},
-  {"to_set", (PyCFunction)__pyx_pw_5vedis_3Set_19to_set, METH_NOARGS, 0},
+  {"to_set", (PyCFunction)__pyx_pw_5vedis_3Set_21to_set, METH_NOARGS, 0},
   {0, 0, 0, 0}
 };
 
@@ -26243,7 +26671,7 @@ static struct PyGetSetDef __pyx_getsets_5vedis_Set[] = {
 
 static PyNumberMethods __pyx_tp_as_number_Set = {
   0, /*nb_add*/
-  __pyx_pw_5vedis_3Set_21__sub__, /*nb_subtract*/
+  __pyx_pw_5vedis_3Set_23__sub__, /*nb_subtract*/
   0, /*nb_multiply*/
   #if PY_MAJOR_VERSION < 3
   0, /*nb_divide*/
@@ -26258,7 +26686,7 @@ static PyNumberMethods __pyx_tp_as_number_Set = {
   0, /*nb_invert*/
   0, /*nb_lshift*/
   0, /*nb_rshift*/
-  __pyx_pw_5vedis_3Set_23__and__, /*nb_and*/
+  __pyx_pw_5vedis_3Set_25__and__, /*nb_and*/
   0, /*nb_xor*/
   0, /*nb_or*/
   #if PY_MAJOR_VERSION < 3
@@ -26319,7 +26747,7 @@ static PySequenceMethods __pyx_tp_as_sequence_Set = {
 static PyMappingMethods __pyx_tp_as_mapping_Set = {
   __pyx_pw_5vedis_3Set_5__len__, /*mp_length*/
   0, /*mp_subscript*/
-  0, /*mp_ass_subscript*/
+  __pyx_mp_ass_subscript_5vedis_Set, /*mp_ass_subscript*/
 };
 
 static PyTypeObject __pyx_type_5vedis_Set = {
@@ -26352,7 +26780,7 @@ static PyTypeObject __pyx_type_5vedis_Set = {
   __pyx_tp_clear_5vedis_Set, /*tp_clear*/
   0, /*tp_richcompare*/
   0, /*tp_weaklistoffset*/
-  __pyx_pw_5vedis_3Set_17__iter__, /*tp_iter*/
+  __pyx_pw_5vedis_3Set_19__iter__, /*tp_iter*/
   0, /*tp_iternext*/
   __pyx_methods_5vedis_Set, /*tp_methods*/
   0, /*tp_members*/
@@ -26488,7 +26916,7 @@ static PyTypeObject __pyx_type_5vedis_List = {
   __pyx_tp_clear_5vedis_List, /*tp_clear*/
   0, /*tp_richcompare*/
   0, /*tp_weaklistoffset*/
-  0, /*tp_iter*/
+  __pyx_pw_5vedis_4List_13__iter__, /*tp_iter*/
   0, /*tp_iternext*/
   __pyx_methods_5vedis_List, /*tp_methods*/
   0, /*tp_members*/
@@ -27189,6 +27617,212 @@ static PyTypeObject __pyx_type_5vedis___pyx_scope_struct_5_register = {
   #endif
 };
 
+static struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ *__pyx_freelist_5vedis___pyx_scope_struct_6___iter__[8];
+static int __pyx_freecount_5vedis___pyx_scope_struct_6___iter__ = 0;
+
+static PyObject *__pyx_tp_new_5vedis___pyx_scope_struct_6___iter__(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
+  PyObject *o;
+  if (CYTHON_COMPILING_IN_CPYTHON && likely((__pyx_freecount_5vedis___pyx_scope_struct_6___iter__ > 0) & (t->tp_basicsize == sizeof(struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__)))) {
+    o = (PyObject*)__pyx_freelist_5vedis___pyx_scope_struct_6___iter__[--__pyx_freecount_5vedis___pyx_scope_struct_6___iter__];
+    memset(o, 0, sizeof(struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__));
+    (void) PyObject_INIT(o, t);
+    PyObject_GC_Track(o);
+  } else {
+    o = (*t->tp_alloc)(t, 0);
+    if (unlikely(!o)) return 0;
+  }
+  return o;
+}
+
+static void __pyx_tp_dealloc_5vedis___pyx_scope_struct_6___iter__(PyObject *o) {
+  struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ *p = (struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ *)o;
+  PyObject_GC_UnTrack(o);
+  Py_CLEAR(p->__pyx_v_self);
+  if (CYTHON_COMPILING_IN_CPYTHON && ((__pyx_freecount_5vedis___pyx_scope_struct_6___iter__ < 8) & (Py_TYPE(o)->tp_basicsize == sizeof(struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__)))) {
+    __pyx_freelist_5vedis___pyx_scope_struct_6___iter__[__pyx_freecount_5vedis___pyx_scope_struct_6___iter__++] = ((struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ *)o);
+  } else {
+    (*Py_TYPE(o)->tp_free)(o);
+  }
+}
+
+static int __pyx_tp_traverse_5vedis___pyx_scope_struct_6___iter__(PyObject *o, visitproc v, void *a) {
+  int e;
+  struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ *p = (struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ *)o;
+  if (p->__pyx_v_self) {
+    e = (*v)(((PyObject*)p->__pyx_v_self), a); if (e) return e;
+  }
+  return 0;
+}
+
+static int __pyx_tp_clear_5vedis___pyx_scope_struct_6___iter__(PyObject *o) {
+  PyObject* tmp;
+  struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ *p = (struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ *)o;
+  tmp = ((PyObject*)p->__pyx_v_self);
+  p->__pyx_v_self = ((struct __pyx_obj_5vedis_List *)Py_None); Py_INCREF(Py_None);
+  Py_XDECREF(tmp);
+  return 0;
+}
+
+static PyTypeObject __pyx_type_5vedis___pyx_scope_struct_6___iter__ = {
+  PyVarObject_HEAD_INIT(0, 0)
+  "vedis.__pyx_scope_struct_6___iter__", /*tp_name*/
+  sizeof(struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__), /*tp_basicsize*/
+  0, /*tp_itemsize*/
+  __pyx_tp_dealloc_5vedis___pyx_scope_struct_6___iter__, /*tp_dealloc*/
+  0, /*tp_print*/
+  0, /*tp_getattr*/
+  0, /*tp_setattr*/
+  #if PY_MAJOR_VERSION < 3
+  0, /*tp_compare*/
+  #else
+  0, /*reserved*/
+  #endif
+  0, /*tp_repr*/
+  0, /*tp_as_number*/
+  0, /*tp_as_sequence*/
+  0, /*tp_as_mapping*/
+  0, /*tp_hash*/
+  0, /*tp_call*/
+  0, /*tp_str*/
+  0, /*tp_getattro*/
+  0, /*tp_setattro*/
+  0, /*tp_as_buffer*/
+  Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_HAVE_GC, /*tp_flags*/
+  0, /*tp_doc*/
+  __pyx_tp_traverse_5vedis___pyx_scope_struct_6___iter__, /*tp_traverse*/
+  __pyx_tp_clear_5vedis___pyx_scope_struct_6___iter__, /*tp_clear*/
+  0, /*tp_richcompare*/
+  0, /*tp_weaklistoffset*/
+  0, /*tp_iter*/
+  0, /*tp_iternext*/
+  0, /*tp_methods*/
+  0, /*tp_members*/
+  0, /*tp_getset*/
+  0, /*tp_base*/
+  0, /*tp_dict*/
+  0, /*tp_descr_get*/
+  0, /*tp_descr_set*/
+  0, /*tp_dictoffset*/
+  0, /*tp_init*/
+  0, /*tp_alloc*/
+  __pyx_tp_new_5vedis___pyx_scope_struct_6___iter__, /*tp_new*/
+  0, /*tp_free*/
+  0, /*tp_is_gc*/
+  0, /*tp_bases*/
+  0, /*tp_mro*/
+  0, /*tp_cache*/
+  0, /*tp_subclasses*/
+  0, /*tp_weaklist*/
+  0, /*tp_del*/
+  0, /*tp_version_tag*/
+  #if PY_VERSION_HEX >= 0x030400a1
+  0, /*tp_finalize*/
+  #endif
+};
+
+static struct __pyx_obj_5vedis___pyx_scope_struct_7_gen *__pyx_freelist_5vedis___pyx_scope_struct_7_gen[8];
+static int __pyx_freecount_5vedis___pyx_scope_struct_7_gen = 0;
+
+static PyObject *__pyx_tp_new_5vedis___pyx_scope_struct_7_gen(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
+  PyObject *o;
+  if (CYTHON_COMPILING_IN_CPYTHON && likely((__pyx_freecount_5vedis___pyx_scope_struct_7_gen > 0) & (t->tp_basicsize == sizeof(struct __pyx_obj_5vedis___pyx_scope_struct_7_gen)))) {
+    o = (PyObject*)__pyx_freelist_5vedis___pyx_scope_struct_7_gen[--__pyx_freecount_5vedis___pyx_scope_struct_7_gen];
+    memset(o, 0, sizeof(struct __pyx_obj_5vedis___pyx_scope_struct_7_gen));
+    (void) PyObject_INIT(o, t);
+    PyObject_GC_Track(o);
+  } else {
+    o = (*t->tp_alloc)(t, 0);
+    if (unlikely(!o)) return 0;
+  }
+  return o;
+}
+
+static void __pyx_tp_dealloc_5vedis___pyx_scope_struct_7_gen(PyObject *o) {
+  struct __pyx_obj_5vedis___pyx_scope_struct_7_gen *p = (struct __pyx_obj_5vedis___pyx_scope_struct_7_gen *)o;
+  PyObject_GC_UnTrack(o);
+  Py_CLEAR(p->__pyx_outer_scope);
+  if (CYTHON_COMPILING_IN_CPYTHON && ((__pyx_freecount_5vedis___pyx_scope_struct_7_gen < 8) & (Py_TYPE(o)->tp_basicsize == sizeof(struct __pyx_obj_5vedis___pyx_scope_struct_7_gen)))) {
+    __pyx_freelist_5vedis___pyx_scope_struct_7_gen[__pyx_freecount_5vedis___pyx_scope_struct_7_gen++] = ((struct __pyx_obj_5vedis___pyx_scope_struct_7_gen *)o);
+  } else {
+    (*Py_TYPE(o)->tp_free)(o);
+  }
+}
+
+static int __pyx_tp_traverse_5vedis___pyx_scope_struct_7_gen(PyObject *o, visitproc v, void *a) {
+  int e;
+  struct __pyx_obj_5vedis___pyx_scope_struct_7_gen *p = (struct __pyx_obj_5vedis___pyx_scope_struct_7_gen *)o;
+  if (p->__pyx_outer_scope) {
+    e = (*v)(((PyObject*)p->__pyx_outer_scope), a); if (e) return e;
+  }
+  return 0;
+}
+
+static int __pyx_tp_clear_5vedis___pyx_scope_struct_7_gen(PyObject *o) {
+  PyObject* tmp;
+  struct __pyx_obj_5vedis___pyx_scope_struct_7_gen *p = (struct __pyx_obj_5vedis___pyx_scope_struct_7_gen *)o;
+  tmp = ((PyObject*)p->__pyx_outer_scope);
+  p->__pyx_outer_scope = ((struct __pyx_obj_5vedis___pyx_scope_struct_6___iter__ *)Py_None); Py_INCREF(Py_None);
+  Py_XDECREF(tmp);
+  return 0;
+}
+
+static PyTypeObject __pyx_type_5vedis___pyx_scope_struct_7_gen = {
+  PyVarObject_HEAD_INIT(0, 0)
+  "vedis.__pyx_scope_struct_7_gen", /*tp_name*/
+  sizeof(struct __pyx_obj_5vedis___pyx_scope_struct_7_gen), /*tp_basicsize*/
+  0, /*tp_itemsize*/
+  __pyx_tp_dealloc_5vedis___pyx_scope_struct_7_gen, /*tp_dealloc*/
+  0, /*tp_print*/
+  0, /*tp_getattr*/
+  0, /*tp_setattr*/
+  #if PY_MAJOR_VERSION < 3
+  0, /*tp_compare*/
+  #else
+  0, /*reserved*/
+  #endif
+  0, /*tp_repr*/
+  0, /*tp_as_number*/
+  0, /*tp_as_sequence*/
+  0, /*tp_as_mapping*/
+  0, /*tp_hash*/
+  0, /*tp_call*/
+  0, /*tp_str*/
+  0, /*tp_getattro*/
+  0, /*tp_setattro*/
+  0, /*tp_as_buffer*/
+  Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_HAVE_GC, /*tp_flags*/
+  0, /*tp_doc*/
+  __pyx_tp_traverse_5vedis___pyx_scope_struct_7_gen, /*tp_traverse*/
+  __pyx_tp_clear_5vedis___pyx_scope_struct_7_gen, /*tp_clear*/
+  0, /*tp_richcompare*/
+  0, /*tp_weaklistoffset*/
+  0, /*tp_iter*/
+  0, /*tp_iternext*/
+  0, /*tp_methods*/
+  0, /*tp_members*/
+  0, /*tp_getset*/
+  0, /*tp_base*/
+  0, /*tp_dict*/
+  0, /*tp_descr_get*/
+  0, /*tp_descr_set*/
+  0, /*tp_dictoffset*/
+  0, /*tp_init*/
+  0, /*tp_alloc*/
+  __pyx_tp_new_5vedis___pyx_scope_struct_7_gen, /*tp_new*/
+  0, /*tp_free*/
+  0, /*tp_is_gc*/
+  0, /*tp_bases*/
+  0, /*tp_mro*/
+  0, /*tp_cache*/
+  0, /*tp_subclasses*/
+  0, /*tp_weaklist*/
+  0, /*tp_del*/
+  0, /*tp_version_tag*/
+  #if PY_VERSION_HEX >= 0x030400a1
+  0, /*tp_finalize*/
+  #endif
+};
+
 static PyMethodDef __pyx_methods[] = {
   {0, 0, 0, 0}
 };
@@ -27320,6 +27954,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_fetch, __pyx_k_fetch, sizeof(__pyx_k_fetch), 0, 0, 1, 1},
   {&__pyx_n_s_filename, __pyx_k_filename, sizeof(__pyx_k_filename), 0, 0, 1, 1},
   {&__pyx_n_s_fn, __pyx_k_fn, sizeof(__pyx_k_fn), 0, 0, 1, 1},
+  {&__pyx_n_s_gen, __pyx_k_gen, sizeof(__pyx_k_gen), 0, 0, 1, 1},
   {&__pyx_n_s_genexpr, __pyx_k_genexpr, sizeof(__pyx_k_genexpr), 0, 0, 1, 1},
   {&__pyx_n_s_get, __pyx_k_get, sizeof(__pyx_k_get), 0, 0, 1, 1},
   {&__pyx_n_s_get_result, __pyx_k_get_result, sizeof(__pyx_k_get_result), 0, 0, 1, 1},
@@ -27339,15 +27974,18 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_hset, __pyx_k_hset, sizeof(__pyx_k_hset), 0, 0, 1, 1},
   {&__pyx_n_s_hsetnx, __pyx_k_hsetnx, sizeof(__pyx_k_hsetnx), 0, 0, 1, 1},
   {&__pyx_n_s_hvals, __pyx_k_hvals, sizeof(__pyx_k_hvals), 0, 0, 1, 1},
+  {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_incr, __pyx_k_incr, sizeof(__pyx_k_incr), 0, 0, 1, 1},
   {&__pyx_n_s_incr_by, __pyx_k_incr_by, sizeof(__pyx_k_incr_by), 0, 0, 1, 1},
   {&__pyx_n_s_index, __pyx_k_index, sizeof(__pyx_k_index), 0, 0, 1, 1},
+  {&__pyx_n_s_iter___locals_gen, __pyx_k_iter___locals_gen, sizeof(__pyx_k_iter___locals_gen), 0, 0, 1, 1},
   {&__pyx_n_s_join, __pyx_k_join, sizeof(__pyx_k_join), 0, 0, 1, 1},
   {&__pyx_n_s_k1, __pyx_k_k1, sizeof(__pyx_k_k1), 0, 0, 1, 1},
   {&__pyx_n_s_k2, __pyx_k_k2, sizeof(__pyx_k_k2), 0, 0, 1, 1},
   {&__pyx_n_s_key, __pyx_k_key, sizeof(__pyx_k_key), 0, 0, 1, 1},
   {&__pyx_n_s_keys, __pyx_k_keys, sizeof(__pyx_k_keys), 0, 0, 1, 1},
   {&__pyx_n_s_kwargs, __pyx_k_kwargs, sizeof(__pyx_k_kwargs), 0, 0, 1, 1},
+  {&__pyx_n_s_l, __pyx_k_l, sizeof(__pyx_k_l), 0, 0, 1, 1},
   {&__pyx_n_s_lindex, __pyx_k_lindex, sizeof(__pyx_k_lindex), 0, 0, 1, 1},
   {&__pyx_n_s_llen, __pyx_k_llen, sizeof(__pyx_k_llen), 0, 0, 1, 1},
   {&__pyx_n_s_lmpush, __pyx_k_lmpush, sizeof(__pyx_k_lmpush), 0, 0, 1, 1},
@@ -27376,6 +28014,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
   {&__pyx_n_s_register_locals_decorator, __pyx_k_register_locals_decorator, sizeof(__pyx_k_register_locals_decorator), 0, 0, 1, 1},
   {&__pyx_n_s_register_locals_decorator_locals, __pyx_k_register_locals_decorator_locals, sizeof(__pyx_k_register_locals_decorator_locals), 0, 0, 1, 1},
+  {&__pyx_n_s_remove, __pyx_k_remove, sizeof(__pyx_k_remove), 0, 0, 1, 1},
   {&__pyx_n_s_replace, __pyx_k_replace, sizeof(__pyx_k_replace), 0, 0, 1, 1},
   {&__pyx_n_s_result, __pyx_k_result, sizeof(__pyx_k_result), 0, 0, 1, 1},
   {&__pyx_n_s_rollback, __pyx_k_rollback, sizeof(__pyx_k_rollback), 0, 0, 1, 1},
@@ -27583,6 +28222,18 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__21 = PyTuple_Pack(1, __pyx_kp_s_utf_8); if (unlikely(!__pyx_tuple__21)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 930; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__21);
   __Pyx_GIVEREF(__pyx_tuple__21);
+
+  /* "vedis.pyx":1096
+ * 
+ *     def __iter__(self):
+ *         def gen():             # <<<<<<<<<<<<<<
+ *             l = len(self)
+ *             for i in range(l):
+ */
+  __pyx_tuple__22 = PyTuple_Pack(2, __pyx_n_s_l, __pyx_n_s_i); if (unlikely(!__pyx_tuple__22)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1096; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__22);
+  __Pyx_GIVEREF(__pyx_tuple__22);
+  __pyx_codeobj__23 = (PyObject*)__Pyx_PyCode_New(0, 0, 2, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_charles_Dropbox_code_vedis, __pyx_n_s_gen, 1096, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__23)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1096; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -27796,9 +28447,9 @@ PyMODINIT_FUNC PyInit_vedis(void)
   __pyx_type_5vedis_Set.tp_print = 0;
   if (PyObject_SetAttrString(__pyx_m, "Set", (PyObject *)&__pyx_type_5vedis_Set) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1027; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5vedis_Set = &__pyx_type_5vedis_Set;
-  if (PyType_Ready(&__pyx_type_5vedis_List) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1069; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyType_Ready(&__pyx_type_5vedis_List) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1072; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_5vedis_List.tp_print = 0;
-  if (PyObject_SetAttrString(__pyx_m, "List", (PyObject *)&__pyx_type_5vedis_List) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1069; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyObject_SetAttrString(__pyx_m, "List", (PyObject *)&__pyx_type_5vedis_List) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1072; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5vedis_List = &__pyx_type_5vedis_List;
   if (PyType_Ready(&__pyx_type_5vedis___pyx_scope_struct__commit_on_success) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 445; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_5vedis___pyx_scope_struct__commit_on_success.tp_print = 0;
@@ -27818,6 +28469,12 @@ PyMODINIT_FUNC PyInit_vedis(void)
   if (PyType_Ready(&__pyx_type_5vedis___pyx_scope_struct_5_register) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 704; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_5vedis___pyx_scope_struct_5_register.tp_print = 0;
   __pyx_ptype_5vedis___pyx_scope_struct_5_register = &__pyx_type_5vedis___pyx_scope_struct_5_register;
+  if (PyType_Ready(&__pyx_type_5vedis___pyx_scope_struct_6___iter__) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1095; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_type_5vedis___pyx_scope_struct_6___iter__.tp_print = 0;
+  __pyx_ptype_5vedis___pyx_scope_struct_6___iter__ = &__pyx_type_5vedis___pyx_scope_struct_6___iter__;
+  if (PyType_Ready(&__pyx_type_5vedis___pyx_scope_struct_7_gen) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1096; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_type_5vedis___pyx_scope_struct_7_gen.tp_print = 0;
+  __pyx_ptype_5vedis___pyx_scope_struct_7_gen = &__pyx_type_5vedis___pyx_scope_struct_7_gen;
   /*--- Type import code ---*/
   /*--- Variable import code ---*/
   /*--- Function import code ---*/
@@ -29472,6 +30129,84 @@ static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type) {
     PyErr_Format(PyExc_TypeError, "Cannot convert %.200s to %.200s",
                  Py_TYPE(obj)->tp_name, type->tp_name);
     return 0;
+}
+
+static CYTHON_INLINE PyObject *__Pyx_GetItemInt_Generic(PyObject *o, PyObject* j) {
+    PyObject *r;
+    if (!j) return NULL;
+    r = PyObject_GetItem(o, j);
+    Py_DECREF(j);
+    return r;
+}
+static CYTHON_INLINE PyObject *__Pyx_GetItemInt_List_Fast(PyObject *o, Py_ssize_t i,
+                                                              int wraparound, int boundscheck) {
+#if CYTHON_COMPILING_IN_CPYTHON
+    if (wraparound & unlikely(i < 0)) i += PyList_GET_SIZE(o);
+    if ((!boundscheck) || likely((0 <= i) & (i < PyList_GET_SIZE(o)))) {
+        PyObject *r = PyList_GET_ITEM(o, i);
+        Py_INCREF(r);
+        return r;
+    }
+    return __Pyx_GetItemInt_Generic(o, PyInt_FromSsize_t(i));
+#else
+    return PySequence_GetItem(o, i);
+#endif
+}
+static CYTHON_INLINE PyObject *__Pyx_GetItemInt_Tuple_Fast(PyObject *o, Py_ssize_t i,
+                                                              int wraparound, int boundscheck) {
+#if CYTHON_COMPILING_IN_CPYTHON
+    if (wraparound & unlikely(i < 0)) i += PyTuple_GET_SIZE(o);
+    if ((!boundscheck) || likely((0 <= i) & (i < PyTuple_GET_SIZE(o)))) {
+        PyObject *r = PyTuple_GET_ITEM(o, i);
+        Py_INCREF(r);
+        return r;
+    }
+    return __Pyx_GetItemInt_Generic(o, PyInt_FromSsize_t(i));
+#else
+    return PySequence_GetItem(o, i);
+#endif
+}
+static CYTHON_INLINE PyObject *__Pyx_GetItemInt_Fast(PyObject *o, Py_ssize_t i,
+                                                     int is_list, int wraparound, int boundscheck) {
+#if CYTHON_COMPILING_IN_CPYTHON
+    if (is_list || PyList_CheckExact(o)) {
+        Py_ssize_t n = ((!wraparound) | likely(i >= 0)) ? i : i + PyList_GET_SIZE(o);
+        if ((!boundscheck) || (likely((n >= 0) & (n < PyList_GET_SIZE(o))))) {
+            PyObject *r = PyList_GET_ITEM(o, n);
+            Py_INCREF(r);
+            return r;
+        }
+    }
+    else if (PyTuple_CheckExact(o)) {
+        Py_ssize_t n = ((!wraparound) | likely(i >= 0)) ? i : i + PyTuple_GET_SIZE(o);
+        if ((!boundscheck) || likely((n >= 0) & (n < PyTuple_GET_SIZE(o)))) {
+            PyObject *r = PyTuple_GET_ITEM(o, n);
+            Py_INCREF(r);
+            return r;
+        }
+    } else {
+        PySequenceMethods *m = Py_TYPE(o)->tp_as_sequence;
+        if (likely(m && m->sq_item)) {
+            if (wraparound && unlikely(i < 0) && likely(m->sq_length)) {
+                Py_ssize_t l = m->sq_length(o);
+                if (likely(l >= 0)) {
+                    i += l;
+                } else {
+                    if (PyErr_ExceptionMatches(PyExc_OverflowError))
+                        PyErr_Clear();
+                    else
+                        return NULL;
+                }
+            }
+            return m->sq_item(o, i);
+        }
+    }
+#else
+    if (is_list || PySequence_Check(o)) {
+        return PySequence_GetItem(o, i);
+    }
+#endif
+    return __Pyx_GetItemInt_Generic(o, PyInt_FromSsize_t(i));
 }
 
 static int __Pyx_SetVtable(PyObject *dict, void *vtable) {
