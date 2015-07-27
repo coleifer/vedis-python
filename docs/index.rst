@@ -3,8 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-vedis-python
-============
+.. image:: http://media.charlesleifer.com/blog/photos/vedis-python-logo.png
 
 Fast Python bindings for `Vedis <http://vedis.symisc.net/>`_, an embedded, NoSQL key/value and data-structure store modeled after `Redis <http://redis.io>`_.
 
