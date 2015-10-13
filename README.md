@@ -23,6 +23,11 @@ Vedis-Python features:
 * Support for executing Vedis commands.
 * Write custom commands in Python.
 
+Limitations:
+
+* Python 2.x only. No support for Python 3.
+* Not tested on Windoze.
+
 The previous version (0.2.0) of `vedis-python` utilized `ctypes` to wrap the Vedis C library. By switching to Cython, key/value and Vedis command operations are significantly faster.
 
 Links:
