@@ -238,7 +238,7 @@ class TestStringCommands(BaseVedisTestCase):
         encoded = self.db.base64(data)
         decoded = self.db.base64_decode(encoded)
         self.assertEqual(decoded, data)
-        self.assertEqual(encoded, base64.b64encode(data))
+        self.assertEqual(encoded, base64.b64encode(data.encode()).decode())
 
 
 class TestHashCommands(BaseVedisTestCase):
@@ -304,7 +304,7 @@ class TestHashCommands(BaseVedisTestCase):
 
 class TestSetCommands(BaseVedisTestCase):
     def test_set_methods(self):
-        vals = set(['v1', 'v2', 'v3', 'v4'])
+        vals = ['v1', 'v2', 'v3', 'v4']
         for val in vals:
             self.db.sadd('set', val)
 
