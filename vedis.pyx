@@ -1,3 +1,4 @@
+# cython: c_string_type=unicode, c_string_encoding=ascii
 # Python library for working with Vedis databases.
 #        _
 #       /.\
@@ -233,13 +234,14 @@ cdef class Vedis(object):
     cpdef open(self):
         """Open database connection."""
         cdef int ret
+        filename = self.filename.encode()
 
         if self.is_open:
             self.close()
 
         self.check_call(vedis_open(
             &self.database,
-            self.filename))
+            filename))
 
         self.is_open = True
 
@@ -271,21 +273,24 @@ cdef class Vedis(object):
 
     cpdef store(self, basestring key, basestring value):
         """Store key/value."""
+        ekey = key.encode()
+        evalue = value.encode()
         self.check_call(vedis_kv_store(
             self.database,
-            <const char *>key,
+            <const char *>ekey,
             -1,
-            <const char *>value,
+            <const char *>evalue,
             len(value)))
 
     cpdef fetch(self, basestring key):
         """Retrieve value at given key. Raises `KeyError` if key not found."""
+        ekey = key.encode()
         cdef char *buf = <char *>0
         cdef vedis_int64 buf_size = 0
 
         self.check_call(vedis_kv_fetch(
             self.database,
-            <char *>key,
+            <char *>ekey,
             -1,
             <void *>0,
             &buf_size))
@@ -294,7 +299,7 @@ cdef class Vedis(object):
             buf = <char *>malloc(buf_size)
             self.check_call(vedis_kv_fetch(
                 self.database,
-                <char *>key,
+                <char *>ekey,
                 -1,
                 <void *>buf,
                 &buf_size))
@@ -305,15 +310,18 @@ cdef class Vedis(object):
 
     cpdef delete(self, basestring key):
         """Delete the value stored at the given key."""
-        self.check_call(vedis_kv_delete(self.database, <char *>key, -1))
+        ekey = key.encode()
+        self.check_call(vedis_kv_delete(self.database, <char *>ekey, -1))
 
     cpdef append(self, basestring key, basestring value):
         """Append to the value stored in the given key."""
+        ekey = key.encode()
+        evalue = value.encode()
         self.check_call(vedis_kv_append(
             self.database,
-            <const char *>key,
+            <const char *>ekey,
             -1,
-            <const char *>value,
+            <const char *>evalue,
             len(value)))
 
     cpdef exists(self, basestring key):
@@ -321,9 +329,11 @@ cdef class Vedis(object):
         cdef vedis_int64 buf_size = 0
         cdef int ret
 
+        ekey = key.encode()
+
         ret = vedis_kv_fetch(
             self.database,
-            <char *>key,
+            <char *>ekey,
             -1,
             <void *>0,
             &buf_size)
@@ -359,7 +369,8 @@ cdef class Vedis(object):
         if params is not None:
             escaped_params = [self._escape(p) for p in params]
             cmd = cmd % tuple(escaped_params)
-        self.check_call(vedis_exec(self.database, <const char *>cmd, -1))
+        ecmd = cmd.encode()
+        self.check_call(vedis_exec(self.database, <const char *>ecmd, -1))
         if result:
             return self.get_result()
 
@@ -579,7 +590,7 @@ cdef class Vedis(object):
         cdef list results
         results = self.execute('HGETALL %s', (hash_key,))
         if results:
-            return zip(results[::2], results[1::2])
+            return list(zip(results[::2], results[1::2]))
         else:
             return []
 
@@ -704,12 +715,12 @@ cdef class Vedis(object):
     def register(self, command_name):
         def decorator(fn):
             cdef vedis_command command_callback
-
+            ecommand_name = command_name.encode()
             py_command_registry[command_name] = fn
             command_callback = py_command_wrapper
             self.check_call(vedis_register_command(
                 self.database,
-                <const char *>command_name,
+                <const char *>ecommand_name,
                 command_callback,
                 <void *>command_name))
 
