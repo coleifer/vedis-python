@@ -7,7 +7,7 @@ You can use ``pip`` to install ``vedis-python``:
 
 .. code-block:: console
 
-    pip install vedis
+    pip install cython vedis
 
 The project is hosted at https://github.com/coleifer/vedis-python and can be installed from source:
 
@@ -19,7 +19,7 @@ The project is hosted at https://github.com/coleifer/vedis-python and can be ins
     python setup.py install
 
 .. note::
-    ``vedis-python`` depends on Cython to generate the Python extension. By default vedis-python ships with a generated C source file, so it is not strictly necessary to install Cython in order to compile ``vedis-python``, but you may wish to install Cython to ensure the generated source is compatible with your setup.
+    ``vedis-python`` depends on Cython to generate the Python extension. By default vedis-python no longer ships with a generated C source file, so it is necessary to install Cython in order to compile ``vedis-python``.
 
 After installing vedis-python, you can run the unit tests by executing the ``tests`` module:
 
