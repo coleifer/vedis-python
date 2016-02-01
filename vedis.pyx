@@ -216,13 +216,19 @@ cdef extern from "src/vedis.h":
 ctypedef int (*vedis_command)(vedis_context *, int, vedis_value **)
 
 
+cdef bint IS_PY3K = sys.version_info[0] == 3
+
+
 cdef bytes encode(obj):
     if isinstance(obj, unicode):
         return obj.encode('utf-8')
+    elif isinstance(obj, bytes):
+        return obj
+    elif obj is None:
+        return None
+    elif IS_PY3K:
+        return bytes(str(obj), 'utf-8')
     return bytes(obj)
-
-
-cdef bint IS_PY3K = sys.version_info[0] == 3
 
 
 cdef class Vedis(object):

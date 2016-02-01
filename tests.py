@@ -80,6 +80,12 @@ class TestKeyValueAPI(BaseVedisTestCase):
         self.assertFalse('k3' in self.db)
         self.assertRaises(KeyError, lambda: self.db['k3'])
 
+    def test_storing_ints(self):
+        self.db['k1'] = 1
+        self.db['k2'] = 1234567890
+        self.assertEqual(self.db['k1'], '1')
+        self.assertEqual(self.db['k2'], '1234567890')
+
 
 class TestBasicCommands(BaseVedisTestCase):
     def test_get_set(self):
