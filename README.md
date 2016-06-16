@@ -2,7 +2,7 @@
 
 Fast Python bindings for the Vedis embedded NoSQL database. Vedis is a fun, fast, embedded database modeled after Redis.
 
-[View the vedis-python documentation](http://vedis-python.readthedocs.org/).
+[View the vedis-python documentation](https://vedis-python.readthedocs.io/).
 
 ### Features
 
@@ -32,10 +32,10 @@ The previous version (0.2.0) of `vedis-python` utilized `ctypes` to wrap the Ved
 
 Links:
 
-* [vedis-python documentation](http://vedis-python.readthedocs.org/)
+* [vedis-python documentation](https://vedis-python.readthedocs.io/)
 * [Vedis's C API](http://vedis.symisc.net/c_api.html)
 
-If you like Vedis, you might also want to check out [UnQLite](http://unqlite.symisc.net), an embedded key/value database with cursors and a cool JSON document store (python bindings: [unqlite-python](http://unqlite-python.readthedocs.org)).
+If you like Vedis, you might also want to check out [UnQLite](http://unqlite.symisc.net), an embedded key/value database with cursors and a cool JSON document store (python bindings: [unqlite-python](https://unqlite-python.readthedocs.io)).
 
 ## Installation
 
@@ -49,7 +49,7 @@ Basic usage
 First you instantiate a `Vedis` object, passing in either the path to the database
 file or the special string `':mem:'` for an in-memory database.
 
-Below is a sample interactive console session designed to show some of the basic features and functionality of the vedis-python library. Also check out the [full API documentation](http://vedis-python.readthedocs.org/en/latest/api.html) as well as the [vedis command documentation](http://vedis.symisc.net/commands.html).
+Below is a sample interactive console session designed to show some of the basic features and functionality of the vedis-python library. Also check out the [full API documentation](https://vedis-python.readthedocs.io/en/latest/api.html) as well as the [vedis command documentation](http://vedis.symisc.net/commands.html).
 
 ### Key/value features
 
