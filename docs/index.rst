@@ -40,7 +40,7 @@ The previous version (0.2.0) of ``vedis-python`` utilized ``ctypes`` to wrap the
   If you encounter any bugs in the library, please `open an issue <https://github.com/coleifer/vedis-python/issues/new>`_, including a description of the bug and any related traceback.
 
 .. note::
-  If you like Vedis you might also want to check out `UnQLite <http://unqlite.org>`_, an embedded key/value database and JSON document store (python bindings: `unqlite-python <http://unqlite-python.readthedocs.org>`_.
+  If you like Vedis you might also want to check out `UnQLite <http://unqlite.org>`_, an embedded key/value database and JSON document store (python bindings: `unqlite-python <https://unqlite-python.readthedocs.io>`_.
 
 Contents:
 
