@@ -21,5 +21,5 @@ setup(
     author='Charles Leifer',
     author_email='',
     install_requires=['cython'],
-    ext_modules=cythonize(vedis_extension),
+    ext_modules=cythonize([vedis_extension]),
 )
