@@ -487,8 +487,13 @@ class TestListObject(BaseVedisTestCase):
         self.assertEqual(l.pop(), 'v1')
         self.assertEqual(l[0], None)  # This is kind of odd, perhaps a bug?
         self.assertEqual(l[1], 'v2')
+        self.assertEqual(l[2], 'v3')
         self.assertEqual(l[3], 'v4')
         self.assertEqual(l[4], None)
+
+        self.assertEqual(list(l[0:2]), [None, 'v2', 'v3'])
+        self.assertEqual(list(l[1:8]), ['v2', 'v3', 'v4'])
+        self.assertEqual(list(l[:]), [None, 'v2', 'v3', 'v4'])
 
 
 class TestCustomCommands(BaseVedisTestCase):

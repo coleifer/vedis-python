@@ -27,8 +27,8 @@ except ImportError:
 
 
 cdef extern from "src/vedis.h":
-    struct vedis
-    struct vedis_kv_cursor
+    ctypedef struct vedis
+    ctypedef struct vedis_kv_cursor
 
     ctypedef struct vedis_context
     ctypedef struct vedis_value
@@ -810,7 +810,8 @@ cdef int py_command_wrapper(vedis_context *context, int nargs, vedis_value **val
 
 
 cdef class VedisContext(object):
-    cdef vedis_context *context
+    cdef:
+        vedis_context *context
 
     def __cinit__(self):
         self.context = NULL
@@ -1142,6 +1143,10 @@ cdef class List(object):
         self.key = key
 
     def __getitem__(self, index):
+        if isinstance(index, slice):
+            start = index.start or 0
+            stop = index.stop or float('inf')
+            return self.get_range(start, stop)
         return self.vedis.lindex(self.key, index)
 
     def __len__(self):
@@ -1162,3 +1167,10 @@ cdef class List(object):
             for i in range(l):
                 yield self[i]
         return iter(gen())
+
+    def get_range(self, start=None, end=None):
+        n = len(self)
+        start = max(0, min(start or 0, n))
+        end = min(end or 0, n)
+        for i in range(start, end + 1):
+            yield self[i]

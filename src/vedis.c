@@ -6119,6 +6119,25 @@ static int vedisKvIoPageDontMakeHot(vedis_page *pRaw)
 		return VEDIS_OK;
 	}
 	pPage->flags |= PAGE_DONT_MAKE_HOT;
+
+	/* Remove from hot dirty list if it is already there */
+	if( pPage->flags & PAGE_HOT_DIRTY ){
+		Pager *pPager = pPage->pPager;
+		if( pPage->pNextHot ){
+			pPage->pNextHot->pPrevHot = pPage->pPrevHot;
+		}
+		if( pPage->pPrevHot ){
+			pPage->pPrevHot->pNextHot = pPage->pNextHot;
+		}
+		if( pPager->pFirstHot == pPage ){
+			pPager->pFirstHot = pPage->pPrevHot;
+		}
+		if( pPager->pHotDirty == pPage ){
+			pPager->pHotDirty = pPage->pNextHot;
+		}
+		pPager->nHot--;
+		pPage->flags &= ~PAGE_HOT_DIRTY;
+	}
 	return VEDIS_OK;
 }
 /* 
@@ -14920,6 +14939,7 @@ static int lhAllocateSpace(lhpage *pPage,sxu64 nAmount,sxu16 *pOfft)
 		SyBigEndianPack16(&zBlock[2],iBlksz-nByte); /* Block size*/
 		/* Offset of the new block */
 		iNext = (sxu16)(zPtr - pPage->pRaw->zData);
+		iBlksz = nByte;
 	}
 	/* Fix offsets */
 	if( zPrev ){
@@ -14931,7 +14951,7 @@ static int lhAllocateSpace(lhpage *pPage,sxu64 nAmount,sxu16 *pOfft)
 		SyBigEndianPack16(&pPage->pRaw->zData[2/* Offset of the first cell1*/],iNext);
 	}
 	/* All done */
-	pPage->nFree -= nByte;
+	pPage->nFree -= iBlksz;
 	return VEDIS_OK;
 }
 /*
@@ -15720,18 +15740,22 @@ static int lhFindSlavePage(lhpage *pPage,sxu64 nAmount,sxu16 *pOfft,lhpage **ppS
 	/* Look for an already attached slave page */
 	for( i = 0 ; i < pMaster->iSlave ; ++i ){
 		/* Find a free chunk big enough */
-		rc = lhAllocateSpace(pSlave,L_HASH_CELL_SZ+nAmount,&iOfft);
+		sxu16 size = L_HASH_CELL_SZ + nAmount;
+		rc = lhAllocateSpace(pSlave,size,&iOfft);
 		if( rc != VEDIS_OK ){
 			/* A space for cell header only */
-			rc = lhAllocateSpace(pSlave,L_HASH_CELL_SZ,&iOfft);
+			size = L_HASH_CELL_SZ;
+			rc = lhAllocateSpace(pSlave,size,&iOfft);
 		}
 		if( rc == VEDIS_OK ){
 			/* All done */
 			if( pOfft ){
 				*pOfft = iOfft;
+			}else{
+				rc = lhRestoreSpace(pSlave, iOfft, size);
 			}
 			*ppSlave = pSlave;
-			return VEDIS_OK;
+			return rc;
 		}
 		/* Point to the next slave page */
 		pSlave = pSlave->pNextSlave;
