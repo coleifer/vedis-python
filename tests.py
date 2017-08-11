@@ -491,8 +491,9 @@ class TestListObject(BaseVedisTestCase):
         self.assertEqual(l[3], 'v4')
         self.assertEqual(l[4], None)
 
-        self.assertEqual(list(l[0:2]), [None, 'v2', 'v3'])
+        self.assertEqual(list(l[0:2]), [None, 'v2'])
         self.assertEqual(list(l[1:8]), ['v2', 'v3', 'v4'])
+        self.assertEqual(list(l[3:4]), ['v4'])
         self.assertEqual(list(l[:]), [None, 'v2', 'v3', 'v4'])
 
 

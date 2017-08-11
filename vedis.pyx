@@ -1134,6 +1134,9 @@ cdef class Set(object):
         return self.vedis.sinter(self.key, rhs.key)
 
 
+__sentinel__ = object()
+
+
 cdef class List(object):
     cdef Vedis vedis
     cdef key
@@ -1144,8 +1147,8 @@ cdef class List(object):
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            start = index.start or 0
-            stop = index.stop or float('inf')
+            start = index.start if index.start is not None else __sentinel__
+            stop = index.stop if index.stop is not None else __sentinel__
             return self.get_range(start, stop)
         return self.vedis.lindex(self.key, index)
 
@@ -1169,8 +1172,11 @@ cdef class List(object):
         return iter(gen())
 
     def get_range(self, start=None, end=None):
-        n = len(self)
-        start = max(0, min(start or 0, n))
-        end = min(end or 0, n)
-        for i in range(start, end + 1):
+        cdef:
+            int n = len(self)
+            int s = 0 if start is __sentinel__ else start
+            int e = n + 1 if end is __sentinel__ else end
+        s = max(0, min(s or 0, n))
+        e = min(e or 0, n + 1)
+        for i in range(s, e):
             yield self[i]

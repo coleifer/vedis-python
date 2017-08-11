@@ -178,6 +178,19 @@ Vedis also supports a list data type.
     >>> l.extend(['v2', 'v3', 'v1'])
     4
 
+    >>> for item in l:
+    ...     print item
+    ...
+    v1
+    v2
+    v3
+    v4
+
+    >>> for item in l[1:3]:
+    ...     print item
+    v2
+    v3
+
     >>> len(l)
     4
 
