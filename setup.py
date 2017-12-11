@@ -1,6 +1,6 @@
 import os
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 try:
     from Cython.Build import cythonize
 except ImportError:
@@ -20,6 +20,7 @@ setup(
     description='Fast Python bindings for the Vedis embedded NoSQL database.',
     author='Charles Leifer',
     author_email='',
+    setup_requires=['cython'],
     install_requires=['cython'],
     ext_modules=cythonize([vedis_extension]),
 )
