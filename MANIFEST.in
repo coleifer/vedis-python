@@ -3,6 +3,7 @@ include LICENSE
 include VEDIS_LICENSE
 include src/vedis.c
 include src/vedis.h
+include vedis.c
 include vedis.pyx
 include tests.py
 recursive-include docs *
