@@ -223,10 +223,10 @@ cdef bint IS_PY3K = sys.version_info[0] == 3
 
 cdef inline bytes encode(obj):
     cdef bytes result
-    if PyUnicode_Check(obj):
-        result = PyUnicode_AsUTF8String(obj)
-    elif PyBytes_Check(obj):
+    if PyBytes_Check(obj):
         result = <bytes>obj
+    elif PyUnicode_Check(obj):
+        result = PyUnicode_AsUTF8String(obj)
     elif obj is None:
         return None
     elif IS_PY3K:
@@ -268,21 +268,23 @@ cdef class Vedis(object):
         """Open database connection."""
         cdef int ret
 
-        if self.is_open:
-            self.close()
+        if self.is_open: return False
 
         self.check_call(vedis_open(
             &self.database,
             self.encoded_filename))
 
         self.is_open = True
+        return True
 
     cpdef close(self):
         """Close database connection."""
-        if self.is_open:
-            self.check_call(vedis_close(self.database))
-            self.is_open = 0
-            self.database = <vedis *>0
+        if not self.is_open: return False
+
+        self.check_call(vedis_close(self.database))
+        self.is_open = False
+        self.database = <vedis *>0
+        return True
 
     def __enter__(self):
         """Use database connection as a context manager."""
@@ -335,19 +337,14 @@ cdef class Vedis(object):
                 <void *>buf,
                 &buf_size))
             value = buf[:buf_size]
-            if IS_PY3K:
-                try:
-                    return value.decode('utf-8')
-                except UnicodeDecodeError:
-                    pass
             return value
         finally:
             free(buf)
 
     cpdef delete(self, key):
         """Delete the value stored at the given key."""
-        cdef bytes ekey = encode(key)
-        self.check_call(vedis_kv_delete(self.database, <char *>ekey, -1))
+        cdef bytes bkey = encode(key)
+        self.check_call(vedis_kv_delete(self.database, <char *>bkey, -1))
 
     cpdef append(self, key, value):
         """Append to the value stored in the given key."""
@@ -399,15 +396,17 @@ cdef class Vedis(object):
         return self.exists(key)
 
     cpdef execute(self, cmd, tuple params=None, bint result=True):
-        cdef bytes encoded_cmd
-        cdef list escaped_params
+        cdef:
+            bytes bcmd = encode(cmd)
+            list escaped_params
+
         if params is not None:
             escaped_params = [self._escape(p) for p in params]
-            cmd = cmd % tuple(escaped_params)
-        encoded_cmd = encode(cmd)
+            bcmd = <bytes>(bcmd % tuple(escaped_params))
+
         self.check_call(vedis_exec(
             self.database,
-            <const char *>encoded_cmd,
+            <const char *>bcmd,
             -1))
         if result:
             return self.get_result()
@@ -469,23 +468,26 @@ cdef class Vedis(object):
     cpdef begin(self):
         """Begin a new transaction. Only works for file-based databases."""
         if self.is_memory:
-            return
+            return False
 
         self.check_call(vedis_begin(self.database))
+        return True
 
     cpdef commit(self):
         """Commit current transaction. Only works for file-based databases."""
         if self.is_memory:
-            return
+            return False
 
         self.check_call(vedis_commit(self.database))
+        return True
 
     cpdef rollback(self):
         """Rollback current transaction. Only works for file-based databases."""
         if self.is_memory:
-            return
+            return False
 
         self.check_call(vedis_rollback(self.database))
+        return True
 
     def transaction(self):
         """Create context manager for wrapping a transaction."""
@@ -513,46 +515,46 @@ cdef class Vedis(object):
 
     # Misc.
     cpdef bint copy(self, src, dest):
-        return self.execute('COPY %s %s', (src, dest))
+        return self.execute(b'COPY %s %s', (src, dest))
 
     cpdef bint move(self, src, dest):
-        return self.execute('MOVE %s %s', (src, dest))
+        return self.execute(b'MOVE %s %s', (src, dest))
 
     cpdef int rand(self, int minimum, int maximum):
-        return self.execute('RAND %s %s' % (minimum, maximum))
+        return self.execute(b'RAND %d %d' % (minimum, maximum))
 
     cpdef randstr(self, int nbytes):
-        return self.execute('RANDSTR %s' % nbytes)
+        return self.execute(b'RANDSTR %d' % nbytes)
 
     cpdef time(self):
-        return self.execute('TIME')
+        return self.execute(b'TIME')
 
     cpdef date(self):
-        return self.execute('DATE')
+        return self.execute(b'DATE')
 
     cpdef operating_system(self):
-        return self.execute('OS')
+        return self.execute(b'OS')
 
     cpdef strip_tags(self, html):
-        return self.execute('STRIP_TAG %s', (html,))
+        return self.execute(b'STRIP_TAG %s', (html,))
 
     cpdef list str_split(self, s, int nchars=1):
-        return self.execute('STR_SPLIT %%s %s' % nchars, (s,))
+        return self.execute(b'STR_SPLIT %%s %d' % nchars, (s,))
 
     cpdef size_format(self, int nbytes):
-        return self.execute('SIZE_FMT %s' % nbytes)
+        return self.execute(b'SIZE_FMT %d' % nbytes)
 
     cpdef soundex(self, s):
-        return self.execute('SOUNDEX %s', (s,))
+        return self.execute(b'SOUNDEX %s', (s,))
 
     cpdef base64(self, data):
-        return self.execute('BASE64 %s', (data,))
+        return self.execute(b'BASE64 %s', (data,))
 
     cpdef base64_decode(self, data):
-        return self.execute('BASE64_DEC %s', (data,))
+        return self.execute(b'BASE64_DEC %s', (data,))
 
     cpdef list table_list(self):
-        return self.execute('TABLE_LIST')
+        return self.execute(b'TABLE_LIST')
 
     # Strings.
     cpdef get(self, key):
@@ -562,63 +564,63 @@ cdef class Vedis(object):
         return self.store(key, value)
 
     cpdef list mget(self, list keys):
-        return self.execute('MGET %s' % self._flatten_list(keys))
+        return self.execute(b'MGET %s' % self._flatten_list(keys))
 
     cpdef bint mset(self, dict kw):
-        return self.execute('MSET %s' % self._flatten(kw))
+        return self.execute(b'MSET %s' % self._flatten(kw))
 
     cpdef bint setnx(self, key, value):
-        return self.execute('SETNX %s %s', (key, value))
+        return self.execute(b'SETNX %s %s', (key, value))
 
     cpdef bint msetnx(self, dict kw):
-        return self.execute('MSETNX %s' % self._flatten(kw))
+        return self.execute(b'MSETNX %s' % self._flatten(kw))
 
     cpdef get_set(self, key, value):
-        return self.execute('GETSET %s %s', (key, value))
+        return self.execute(b'GETSET %s %s', (key, value))
 
     cpdef int strlen(self, key):
-        return self.execute('STRLEN %s', (key,))
+        return self.execute(b'STRLEN %s', (key,))
 
     # Counters.
     cpdef int incr(self, key):
-        return self.execute('INCR %s', (key,))
+        return self.execute(b'INCR %s', (key,))
 
     cpdef int decr(self, key):
-        return self.execute('DECR %s', (key,))
+        return self.execute(b'DECR %s', (key,))
 
     cpdef int incr_by(self, key, int amount):
-        return self.execute('INCRBY %%s %s' % amount, (key,))
+        return self.execute(b'INCRBY %%s %d' % amount, (key,))
 
     cpdef int decr_by(self, key, int amount):
-        return self.execute('DECRBY %%s %s' % amount, (key,))
+        return self.execute(b'DECRBY %%s %d' % amount, (key,))
 
     # Hash methods.
     cpdef bint hset(self, hash_key, key, value):
-        return self.execute('HSET %s %s %s', (hash_key, key, value))
+        return self.execute(b'HSET %s %s %s', (hash_key, key, value))
 
     cpdef bint hsetnx(self, hash_key, key, value):
-        return self.execute('HSETNX %s %s %s', (hash_key, key, value))
+        return self.execute(b'HSETNX %s %s %s', (hash_key, key, value))
 
     cpdef hget(self, hash_key, key):
-        return self.execute('HGET %s %s', (hash_key, key))
+        return self.execute(b'HGET %s %s', (hash_key, key))
 
     cpdef int hdel(self, hash_key, key):
-        return self.execute('HDEL %s %s', (hash_key, key))
+        return self.execute(b'HDEL %s %s', (hash_key, key))
 
     cpdef int hmdel(self, hash_key, list keys):
         return self.execute(
-            'HDEL %%s %s' % self._flatten_list(keys),
+            b'HDEL %%s %s' % self._flatten_list(keys),
             (hash_key,))
 
     cpdef list hkeys(self, hash_key):
-        return self.execute('HKEYS %s', (hash_key,))
+        return self.execute(b'HKEYS %s', (hash_key,))
 
     cpdef list hvals(self, hash_key):
-        return self.execute('HVALS %s', (hash_key,))
+        return self.execute(b'HVALS %s', (hash_key,))
 
     cpdef dict hgetall(self, hash_key):
         cdef list results
-        results = self.execute('HGETALL %s', (hash_key,))
+        results = self.execute(b'HGETALL %s', (hash_key,))
         if results:
             return dict(zip(results[::2], results[1::2]))
         else:
@@ -626,115 +628,118 @@ cdef class Vedis(object):
 
     cpdef list hitems(self, hash_key):
         cdef list results
-        results = self.execute('HGETALL %s', (hash_key,))
+        results = self.execute(b'HGETALL %s', (hash_key,))
         if results:
             return list(zip(results[::2], results[1::2]))
         else:
             return []
 
     cpdef int hlen(self, hash_key):
-        return self.execute('HLEN %s', (hash_key,))
+        return self.execute(b'HLEN %s', (hash_key,))
 
     cpdef bint hexists(self, hash_key, key):
-        return self.execute('HEXISTS %s %s', (hash_key, key))
+        return self.execute(b'HEXISTS %s %s', (hash_key, key))
 
     cpdef int hmset(self, hash_key, dict data):
         return self.execute(
-            'HMSET %%s %s' % self._flatten(data),
+            b'HMSET %%s %s' % self._flatten(data),
             (hash_key,))
 
     cpdef list hmget(self, hash_key, list keys):
         return self.execute(
-            'HMGET %%s %s' % self._flatten_list(keys),
+            b'HMGET %%s %s' % self._flatten_list(keys),
             (hash_key,))
 
     # Set methods.
     cpdef int sadd(self, key, value):
-        return self.execute('SADD %s %s', (key, value))
+        return self.execute(b'SADD %s %s', (key, value))
 
     cpdef int smadd(self, key, list values):
         return self.execute(
-            'SADD %%s %s' % self._flatten_list(values),
+            b'SADD %%s %s' % self._flatten_list(values),
             (key,))
 
     cpdef int scard(self, key):
-        return self.execute('SCARD %s', (key,))
+        return self.execute(b'SCARD %s', (key,))
 
     cpdef bint sismember(self, key, value):
-        return self.execute('SISMEMBER %s %s', (key, value))
+        return self.execute(b'SISMEMBER %s %s', (key, value))
 
     cpdef spop(self, key):
-        return self.execute('SPOP %s', (key,))
+        return self.execute(b'SPOP %s', (key,))
 
     cpdef speek(self, key):
-        return self.execute('SPEEK %s', (key,))
+        return self.execute(b'SPEEK %s', (key,))
 
     cpdef stop(self, key):
-        return self.execute('STOP %s', (key,))
+        return self.execute(b'STOP %s', (key,))
 
     cpdef bint srem(self, key, value):
-        return self.execute('SREM %s %s', (key, value))
+        return self.execute(b'SREM %s %s', (key, value))
 
     cpdef int smrem(self, key, list values):
         return self.execute(
-            'SREM %%s %s' % self._flatten_list(values),
+            b'SREM %%s %s' % self._flatten_list(values),
             (key,))
 
     cpdef set smembers(self, key):
         cdef list results
-        results = self.execute('SMEMBERS %s', (key,))
+        results = self.execute(b'SMEMBERS %s', (key,))
         return set(results)
 
     cpdef set sdiff(self, k1, k2):
         cdef list results
-        results = self.execute('SDIFF %s %s', (k1, k2))
+        results = self.execute(b'SDIFF %s %s', (k1, k2))
         return set(results)
 
     cpdef set sinter(self, k1, k2):
         cdef list results
-        results = self.execute('SINTER %s %s', (k1, k2))
+        results = self.execute(b'SINTER %s %s', (k1, k2))
         return set(results)
 
     cpdef int slen(self, key):
-        return self.execute('SLEN %s', (key,))
+        return self.execute(b'SLEN %s', (key,))
 
     # List methods.
     cpdef lindex(self, key, int index):
-        return self.execute('LINDEX %%s %s' % index, (key,))
+        return self.execute(b'LINDEX %%s %d' % index, (key,))
 
     cpdef int llen(self, key):
-        return self.execute('LLEN %s', (key,))
+        return self.execute(b'LLEN %s', (key,))
 
     cpdef lpop(self, key):
-        return self.execute('LPOP %s', (key,))
+        return self.execute(b'LPOP %s', (key,))
 
     cpdef int lpush(self, key, value):
-        return self.execute('LPUSH %s %s', (key, value))
+        return self.execute(b'LPUSH %s %s', (key, value))
 
     cpdef int lmpush(self, key, list values):
         return self.execute(
-            'LPUSH %%s %s' % self._flatten_list(values),
+            b'LPUSH %%s %s' % self._flatten_list(values),
             (key,))
 
     cpdef int lpushx(self, key, value):
-        return self.execute('LPUSHX %s %s', (key, value))
+        return self.execute(b'LPUSHX %s %s', (key, value))
 
     cpdef int lmpushx(self, key, list values):
         return self.execute(
-            'LPUSHX %%s %s' % self._flatten_list(values),
+            b'LPUSHX %%s %s' % self._flatten_list(values),
             (key,))
 
     # Internal helpers.
     cdef _flatten_list(self, list args):
-        return ' '.join(self._escape(key) for key in args)
+        return b' '.join(self._escape(key) for key in args)
 
     cdef _flatten(self, dict kwargs):
-        return ' '.join(
-            '%s %s' % (self._escape(key), self._escape(kwargs[key]))
+        return b' '.join(
+            b'%s %s' % (self._escape(key), self._escape(kwargs[key]))
             for key in kwargs)
 
-    cdef _escape(self, s):
-        return '"%s"' % str(s).replace('"', '\\"')
+    cdef bytes _escape(self, s):
+        cdef bytes bkey = encode(s)
+        if bkey.find(b'"') >= 0:
+            bkey = bkey.replace(b'"', b'\\"')
+        return b'"' + bkey + b'"'
 
     def lib_version(self):
         return vedis_lib_version()
@@ -763,24 +768,23 @@ cdef class Vedis(object):
 
             def wrapper(*args):
                 direct_params, params = [], []
-                command_string = [command_name]
+                command_string = [encode(command_name)]
                 for arg in args:
                     if isinstance(arg, (list, tuple)):
                         direct_params.append(self._flatten_list(arg))
-                        command_string.append('%s')
+                        command_string.append(b'%s')
                     elif isinstance(arg, dict):
                         direct_params.append(self._flatten(arg))
-                        command_string.append('%s')
+                        command_string.append(b'%s')
                     else:
                         params.append(arg)
-                        command_string.append('%%s')
+                        command_string.append(b'%%s')
 
                 return self.execute(
-                    ' '.join(command_string) % direct_params,
+                    b' '.join(command_string) % direct_params,
                     tuple(params))
 
             wrapper.wrapped = fn
-
             return wrapper
         return decorator
 
@@ -862,11 +866,6 @@ cdef class VedisContext(object):
                 <void *>buf,
                 &buf_size)
             value = buf[:buf_size]
-            if IS_PY3K:
-                try:
-                    return value.decode('utf-8')
-                except UnicodeDecodeError:
-                    pass
             return value
         finally:
             free(buf)
@@ -928,12 +927,9 @@ cdef vedis_value_to_python(vedis_value *ptr):
 
     if vedis_value_is_string(ptr):
         value = vedis_value_to_string(ptr, NULL)
-        if IS_PY3K:
-            try:
-                value = value.decode('utf-8')
-            except UnicodeDecodeError:
-                pass
-        return value.replace('\\"', '"')
+        if value.find(b'\\"') >= 0:
+            value = value.replace(b'\\"', b'"')
+        return value
     elif vedis_value_is_array(ptr):
         accum = []
         while True:
