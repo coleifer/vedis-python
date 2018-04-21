@@ -24,7 +24,7 @@ vedis_extension = Extension(
 
 setup(
     name='vedis',
-    version='0.6.1',
+    version='0.7.0',
     description='Fast Python bindings for the Vedis embedded NoSQL database.',
     author='Charles Leifer',
     author_email='',
