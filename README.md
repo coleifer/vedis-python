@@ -1,3 +1,7 @@
+### WARNING:
+
+[Vedis](https://github.com/symisc/vedis) appears to be no longer maintained by symisc.
+
 ![](http://media.charlesleifer.com/blog/photos/vedis-python-logo.png)
 
 Fast Python bindings for the Vedis embedded NoSQL database. Vedis is a fun, fast, embedded database modeled after Redis.
