@@ -216,7 +216,7 @@ cdef extern from "src/vedis.h":
     cdef int VEDIS_CURSOR_MATCH_GE = 3
 
 
-ctypedef int (*vedis_command)(vedis_context *, int, vedis_value **)
+ctypedef int (*vedis_command)(vedis_context *, int, vedis_value **) noexcept
 
 
 cdef bint IS_PY3K = sys.version_info[0] == 3
@@ -798,7 +798,7 @@ cdef class Vedis(object):
 cdef dict py_command_registry = {}
 
 
-cdef int py_command_wrapper(vedis_context *context, int nargs, vedis_value **values):
+cdef int py_command_wrapper(vedis_context *context, int nargs, vedis_value **values) noexcept:
     cdef int i
     cdef list converted = []
     cdef VedisContext context_wrapper = VedisContext()
