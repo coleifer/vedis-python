@@ -965,7 +965,7 @@ cdef vedis_value* create_vedis_scalar(vedis_context *context, python_value):
         vedis_value_string(ptr, encoded_value, -1)
     elif isinstance(python_value, bytes):
         vedis_value_string(ptr, python_value, -1)
-    elif isinstance(python_value, (int, long)):
+    elif isinstance(python_value, int):
         vedis_value_int(ptr, python_value)
     elif isinstance(python_value, bool):
         vedis_value_bool(ptr, python_value)
@@ -998,7 +998,7 @@ cdef push_result(vedis_context *context, python_value):
         vedis_result_string(context, python_value, -1)
     elif isinstance(python_value, (list, tuple)):
         vedis_result_value(context, create_vedis_array(context, python_value))
-    elif isinstance(python_value, (int, long)):
+    elif isinstance(python_value, int):
         vedis_result_int(context, python_value)
     elif isinstance(python_value, bool):
         vedis_result_bool(context, python_value)
