@@ -28,6 +28,11 @@ except ImportError:
         _fsencoding = _getfsencoding()
     fsencode = lambda s: s.encode(_fsencoding)
 
+try:
+    long
+except NameError:
+    long = int
+
 
 cdef extern from "src/vedis.h":
     ctypedef struct vedis
